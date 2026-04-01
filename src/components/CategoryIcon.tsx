@@ -1,8 +1,8 @@
-import { UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal } from 'lucide-react';
+import { UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal, type LucideIcon } from 'lucide-react';
 import type { Category } from '@/types';
 import { categoryConfig } from '@/lib/categories';
 
-const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
+const iconMap: Record<string, LucideIcon> = {
   UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal,
 };
 
