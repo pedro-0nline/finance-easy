@@ -14,16 +14,379 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bank_accounts: {
+        Row: {
+          balance: number
+          color: string
+          created_at: string
+          id: string
+          institution: string
+          name: string
+          type: Database["public"]["Enums"]["account_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          color?: string
+          created_at?: string
+          id?: string
+          institution?: string
+          name: string
+          type?: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          color?: string
+          created_at?: string
+          id?: string
+          institution?: string
+          name?: string
+          type?: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      budgets: {
+        Row: {
+          budget_limit: number
+          category: Database["public"]["Enums"]["category"]
+          created_at: string
+          id: string
+          month: string
+          spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget_limit?: number
+          category: Database["public"]["Enums"]["category"]
+          created_at?: string
+          id?: string
+          month: string
+          spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget_limit?: number
+          category?: Database["public"]["Enums"]["category"]
+          created_at?: string
+          id?: string
+          month?: string
+          spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credit_cards: {
+        Row: {
+          closing_day: number
+          color: string
+          created_at: string
+          credit_limit: number
+          due_day: number
+          id: string
+          institution: string
+          name: string
+          updated_at: string
+          used: number
+          user_id: string
+        }
+        Insert: {
+          closing_day?: number
+          color?: string
+          created_at?: string
+          credit_limit?: number
+          due_day?: number
+          id?: string
+          institution?: string
+          name: string
+          updated_at?: string
+          used?: number
+          user_id: string
+        }
+        Update: {
+          closing_day?: number
+          color?: string
+          created_at?: string
+          credit_limit?: number
+          due_day?: number
+          id?: string
+          institution?: string
+          name?: string
+          updated_at?: string
+          used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          color: string
+          created_at: string
+          current_amount: number
+          deadline: string
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          current_amount?: number
+          deadline: string
+          id?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          current_amount?: number
+          deadline?: string
+          id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      group_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          group_id: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      insights: {
+        Row: {
+          action_taken: boolean
+          created_at: string
+          description: string
+          id: string
+          priority: Database["public"]["Enums"]["insight_priority"]
+          title: string
+          type: Database["public"]["Enums"]["insight_type"]
+          user_id: string
+        }
+        Insert: {
+          action_taken?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["insight_priority"]
+          title: string
+          type?: Database["public"]["Enums"]["insight_type"]
+          user_id: string
+        }
+        Update: {
+          action_taken?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["insight_priority"]
+          title?: string
+          type?: Database["public"]["Enums"]["insight_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          currency: string
+          email: string | null
+          first_day_of_week: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          first_day_of_week?: number
+          id: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          first_day_of_week?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["category"]
+          created_at: string
+          date: string
+          description: string
+          id: string
+          installment_group_id: string | null
+          installment_number: number | null
+          is_installment: boolean
+          is_paid: boolean
+          is_shared: boolean
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          shared_with: Json | null
+          total_installments: number | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: Database["public"]["Enums"]["category"]
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          is_installment?: boolean
+          is_paid?: boolean
+          is_shared?: boolean
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          shared_with?: Json | null
+          total_installments?: number | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["category"]
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          is_installment?: boolean
+          is_paid?: boolean
+          is_shared?: boolean
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          shared_with?: Json | null
+          total_installments?: number | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      account_type: "checking" | "savings" | "investment"
+      category:
+        | "food"
+        | "health"
+        | "transport"
+        | "education"
+        | "leisure"
+        | "housing"
+        | "utilities"
+        | "other"
+      group_role: "owner" | "manager" | "editor" | "viewer"
+      insight_priority: "high" | "medium" | "low"
+      insight_type: "analysis" | "recommendation" | "alert" | "opportunity"
+      payment_method:
+        | "cash"
+        | "credit_card"
+        | "debit_card"
+        | "pix"
+        | "transfer"
+        | "boleto"
+      transaction_type: "income" | "expense" | "recurring" | "fixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +513,30 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["checking", "savings", "investment"],
+      category: [
+        "food",
+        "health",
+        "transport",
+        "education",
+        "leisure",
+        "housing",
+        "utilities",
+        "other",
+      ],
+      group_role: ["owner", "manager", "editor", "viewer"],
+      insight_priority: ["high", "medium", "low"],
+      insight_type: ["analysis", "recommendation", "alert", "opportunity"],
+      payment_method: [
+        "cash",
+        "credit_card",
+        "debit_card",
+        "pix",
+        "transfer",
+        "boleto",
+      ],
+      transaction_type: ["income", "expense", "recurring", "fixed"],
+    },
   },
 } as const
