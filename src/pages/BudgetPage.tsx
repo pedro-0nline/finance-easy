@@ -3,23 +3,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { ProgressBar } from '@/components/ProgressBar';
-import { useStore } from '@/store/useStore';
+import { useBudgets } from '@/hooks/useSupabaseData';
 import { categoryConfig } from '@/lib/categories';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { Category } from '@/types';
 
 const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
 export default function BudgetPage() {
-  const { budgets } = useStore();
+  const { data: budgets = [], isLoading } = useBudgets();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const monthStr = format(selectedMonth, 'yyyy-MM');
   const monthBudgets = budgets.filter((b) => b.month === monthStr);
-  const totalLimit = monthBudgets.reduce((s, b) => s + b.limit, 0);
-  const totalSpent = monthBudgets.reduce((s, b) => s + b.spent, 0);
+  const totalLimit = monthBudgets.reduce((s, b) => s + Number(b.budget_limit), 0);
+  const totalSpent = monthBudgets.reduce((s, b) => s + Number(b.spent), 0);
 
   const chartData = Array.from({ length: 6 }, (_, i) => {
     const m = subMonths(selectedMonth, 5 - i);
@@ -29,6 +30,10 @@ export default function BudgetPage() {
       gasto: totalSpent + (i - 3) * 150 + Math.random() * 500,
     };
   });
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -45,7 +50,6 @@ export default function BudgetPage() {
         </div>
       </div>
 
-      {/* Summary */}
       <Card>
         <CardHeader><CardTitle className="text-base">Resumo Geral</CardTitle></CardHeader>
         <CardContent className="space-y-4">
@@ -67,28 +71,30 @@ export default function BudgetPage() {
         </CardContent>
       </Card>
 
-      {/* Per category */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {monthBudgets.map((b) => {
-          const pct = Math.round((b.spent / b.limit) * 100);
+          const pct = Math.round((Number(b.spent) / Number(b.budget_limit)) * 100);
           return (
             <Card key={b.id} className="animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <CategoryIcon category={b.category} size={16} />
+                  <CategoryIcon category={b.category as Category} size={16} />
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{categoryConfig[b.category].label}</p>
-                    <p className="text-xs text-muted-foreground">{fmt(b.spent)} de {fmt(b.limit)}</p>
+                    <p className="font-medium text-sm">{categoryConfig[b.category as Category]?.label}</p>
+                    <p className="text-xs text-muted-foreground">{fmt(Number(b.spent))} de {fmt(Number(b.budget_limit))}</p>
                   </div>
                   <span className={`text-sm font-bold ${pct > 90 ? 'text-destructive' : pct > 70 ? 'text-warning' : 'text-success'}`}>
                     {pct}%
                   </span>
                 </div>
-                <ProgressBar value={b.spent} max={b.limit} showAlert />
+                <ProgressBar value={Number(b.spent)} max={Number(b.budget_limit)} showAlert />
               </CardContent>
             </Card>
           );
         })}
+        {monthBudgets.length === 0 && (
+          <p className="text-muted-foreground col-span-2 text-center py-8">Nenhum orçamento definido para este mês</p>
+        )}
       </div>
     </div>
   );

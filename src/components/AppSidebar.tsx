@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Calendar, PiggyBank, Target,
@@ -10,6 +9,8 @@ import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, useSidebar,
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useSupabaseData';
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
@@ -27,6 +28,11 @@ export function AppSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
+  const { user, signOut } = useAuth();
+  const { data: profile } = useProfile();
+
+  const displayName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || '';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -83,13 +89,18 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-            JS
+            {initials || '?'}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">João Silva</p>
-              <p className="text-xs text-muted-foreground truncate">joao@email.com</p>
+              <p className="text-sm font-medium truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
+          )}
+          {!collapsed && (
+            <button onClick={signOut} className="text-muted-foreground hover:text-foreground transition-colors" title="Sair">
+              <LogOut size={16} />
+            </button>
           )}
         </div>
       </SidebarFooter>

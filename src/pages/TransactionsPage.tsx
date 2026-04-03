@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, MoreVertical, Trash2, Copy, Check } from 'lucide-react';
+import { Plus, Search, MoreVertical, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,14 +10,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { AmountBadge } from '@/components/AmountBadge';
 import { TransactionTypeBadge, PaymentMethodBadge, InstallmentBadge } from '@/components/Badges';
-import { useStore } from '@/store/useStore';
+import { useTransactions, useTogglePaid, useDeleteTransaction } from '@/hooks/useSupabaseData';
 import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { Category, TransactionType, PaymentMethod } from '@/types';
+import type { Category } from '@/types';
 
 export default function TransactionsPage() {
-  const { transactions, togglePaid, deleteTransaction } = useStore();
+  const { data: transactions = [], isLoading } = useTransactions();
+  const togglePaid = useTogglePaid();
+  const deleteTxn = useDeleteTransaction();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -30,14 +32,13 @@ export default function TransactionsPage() {
         if (search && !t.description.toLowerCase().includes(search.toLowerCase())) return false;
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
-        if (paymentFilter !== 'all' && t.paymentMethod !== paymentFilter) return false;
-        if (unpaidOnly && t.isPaid) return false;
+        if (paymentFilter !== 'all' && t.payment_method !== paymentFilter) return false;
+        if (unpaidOnly && t.is_paid) return false;
         return true;
       })
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, search, typeFilter, categoryFilter, paymentFilter, unpaidOnly]);
 
-  // Group by day
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
     filtered.forEach((t) => {
@@ -48,6 +49,10 @@ export default function TransactionsPage() {
     return Array.from(map.entries());
   }, [filtered]);
 
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -57,7 +62,6 @@ export default function TransactionsPage() {
         </Link>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -101,10 +105,9 @@ export default function TransactionsPage() {
         </CardContent>
       </Card>
 
-      {/* Transaction List */}
       <div className="space-y-4">
         {grouped.map(([day, txns]) => {
-          const dayTotal = txns.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+          const dayTotal = txns.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
           return (
             <div key={day}>
               <div className="flex items-center justify-between mb-2">
@@ -119,21 +122,21 @@ export default function TransactionsPage() {
                 <CardContent className="p-0 divide-y divide-border">
                   {txns.map((t) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors">
-                      <CategoryIcon category={t.category} size={14} />
+                      <CategoryIcon category={t.category as Category} size={14} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium truncate">{t.description}</p>
-                          {t.isInstallment && <InstallmentBadge current={t.installmentNumber!} total={t.totalInstallments!} />}
-                          {t.isShared && <span className="text-xs bg-info/10 text-info px-1.5 py-0.5 rounded">Compartilhado</span>}
+                          {t.is_installment && <InstallmentBadge current={t.installment_number!} total={t.total_installments!} />}
+                          {t.is_shared && <span className="text-xs bg-info/10 text-info px-1.5 py-0.5 rounded">Compartilhado</span>}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <TransactionTypeBadge type={t.type} />
-                          <PaymentMethodBadge method={t.paymentMethod} />
+                          <PaymentMethodBadge method={t.payment_method} />
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Checkbox checked={t.isPaid} onCheckedChange={() => togglePaid(t.id)} />
-                        <AmountBadge amount={t.amount} type={t.type === 'income' ? 'income' : 'expense'} />
+                        <Checkbox checked={t.is_paid} onCheckedChange={() => togglePaid.mutate({ id: t.id, isPaid: t.is_paid })} />
+                        <AmountBadge amount={Number(t.amount)} type={t.type === 'income' ? 'income' : 'expense'} />
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -141,7 +144,7 @@ export default function TransactionsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => deleteTransaction(t.id)} className="text-destructive">
+                            <DropdownMenuItem onClick={() => deleteTxn.mutate(t.id)} className="text-destructive">
                               <Trash2 size={14} className="mr-2" /> Excluir
                             </DropdownMenuItem>
                           </DropdownMenuContent>

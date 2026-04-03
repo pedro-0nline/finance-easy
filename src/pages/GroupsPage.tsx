@@ -1,16 +1,18 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useStore } from '@/store/useStore';
-import { Users, Copy, QrCode } from 'lucide-react';
+import { useGroups } from '@/hooks/useSupabaseData';
+import { Users, Copy, QrCode, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GroupsPage() {
-  const { group } = useStore();
+  const { data: groups = [], isLoading } = useGroups();
 
-  if (!group) {
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
+  }
+
+  if (groups.length === 0) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Grupos Familiares</h1>
@@ -28,6 +30,9 @@ export default function GroupsPage() {
       </div>
     );
   }
+
+  const group = groups[0];
+  const members = (group as any).group_members || [];
 
   const roleColors: Record<string, string> = {
     owner: 'bg-primary/10 text-primary',
@@ -47,18 +52,17 @@ export default function GroupsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Members */}
           <div className="space-y-2">
-            {group.members.map((m) => (
-              <div key={m.userId} className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
+            {members.map((m: any) => (
+              <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                    {m.name.split(' ').map((n) => n[0]).join('')}
+                    {m.name?.split(' ').map((n: string) => n[0]).join('') || '?'}
                   </div>
                   <span className="text-sm font-medium">{m.name}</span>
                 </div>
-                <Badge variant="secondary" className={roleColors[m.role]}>
-                  {{ owner: 'Dono', manager: 'Gerente', editor: 'Editor', viewer: 'Visualizador' }[m.role]}
+                <Badge variant="secondary" className={roleColors[m.role] || ''}>
+                  {{ owner: 'Dono', manager: 'Gerente', editor: 'Editor', viewer: 'Visualizador' }[m.role as string] || m.role}
                 </Badge>
               </div>
             ))}
@@ -66,16 +70,15 @@ export default function GroupsPage() {
         </CardContent>
       </Card>
 
-      {/* Invite */}
       <Card className="animate-fade-in">
         <CardHeader><CardTitle className="text-base">Convidar Membro</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted">
-            <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.inviteCode}</code>
+            <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => { navigator.clipboard.writeText(group.inviteCode); toast.info('Código copiado!'); }}
+              onClick={() => { navigator.clipboard.writeText(group.invite_code); toast.info('Código copiado!'); }}
             >
               <Copy size={14} className="mr-1" /> Copiar
             </Button>
@@ -86,7 +89,6 @@ export default function GroupsPage() {
               <p className="text-xs">QR Code do convite</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center">Expira em 15 minutos</p>
         </CardContent>
       </Card>
     </div>

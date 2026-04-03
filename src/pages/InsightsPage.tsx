@@ -1,27 +1,29 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useStore } from '@/store/useStore';
+import { useInsights, useMarkInsightActioned } from '@/hooks/useSupabaseData';
 import { Sparkles, AlertTriangle, Lightbulb, BarChart3, Star, Check, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import type { InsightType } from '@/types';
+
+type IType = 'alert' | 'recommendation' | 'analysis' | 'opportunity';
 
 export default function InsightsPage() {
-  const { insights, markInsightActioned } = useStore();
+  const { data: insights = [], isLoading } = useInsights();
+  const markActioned = useMarkInsightActioned();
   const [analyzing, setAnalyzing] = useState(false);
 
-  const typeIcons: Record<InsightType, React.ReactNode> = {
+  const typeIcons: Record<IType, React.ReactNode> = {
     alert: <AlertTriangle size={16} />,
     recommendation: <Lightbulb size={16} />,
     analysis: <BarChart3 size={16} />,
     opportunity: <Star size={16} />,
   };
 
-  const typeColors: Record<InsightType, string> = {
+  const typeColors: Record<IType, string> = {
     alert: 'bg-destructive/10 text-destructive border-destructive/20',
     recommendation: 'bg-info/10 text-info border-info/20',
     analysis: 'bg-success/10 text-success border-success/20',
@@ -36,10 +38,7 @@ export default function InsightsPage() {
 
   const handleAnalyze = () => {
     setAnalyzing(true);
-    setTimeout(() => {
-      setAnalyzing(false);
-      toast.success('Análise concluída! Novos insights gerados.');
-    }, 2000);
+    setTimeout(() => { setAnalyzing(false); toast.success('Análise concluída!'); }, 2000);
   };
 
   const renderInsights = (list: typeof insights) => (
@@ -48,8 +47,8 @@ export default function InsightsPage() {
         <Card key={insight.id} className="animate-fade-in">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg shrink-0 ${typeColors[insight.type]}`}>
-                {typeIcons[insight.type]}
+              <div className={`p-2 rounded-lg shrink-0 ${typeColors[insight.type as IType] || ''}`}>
+                {typeIcons[insight.type as IType]}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -57,15 +56,15 @@ export default function InsightsPage() {
                   <Badge variant="outline" className={priorityColors[insight.priority]}>
                     {{ high: 'Alta', medium: 'Média', low: 'Baixa' }[insight.priority]}
                   </Badge>
-                  {insight.actionTaken && <Badge variant="secondary" className="bg-success/10 text-success"><Check size={12} className="mr-1" /> Aplicado</Badge>}
+                  {insight.action_taken && <Badge variant="secondary" className="bg-success/10 text-success"><Check size={12} className="mr-1" /> Aplicado</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground">{insight.description}</p>
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(parseISO(insight.createdAt), { addSuffix: true, locale: ptBR })}
+                    {formatDistanceToNow(parseISO(insight.created_at), { addSuffix: true, locale: ptBR })}
                   </span>
-                  {!insight.actionTaken && (
-                    <Button size="sm" variant="outline" onClick={() => { markInsightActioned(insight.id); toast.success('Sugestão aplicada!'); }}>
+                  {!insight.action_taken && (
+                    <Button size="sm" variant="outline" onClick={() => { markActioned.mutate(insight.id); toast.success('Sugestão aplicada!'); }}>
                       Aplicar sugestão
                     </Button>
                   )}
@@ -78,6 +77,10 @@ export default function InsightsPage() {
       {list.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum insight nesta categoria</p>}
     </div>
   );
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
+  }
 
   return (
     <div className="space-y-6">
