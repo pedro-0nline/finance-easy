@@ -30,7 +30,7 @@ export function useAddTransaction() {
       installment_group_id?: string; is_shared: boolean;
       shared_with?: any; is_paid: boolean; notes?: string;
     }) => {
-      const { error } = await supabase.from('transactions').insert({ ...t, user_id: user!.id });
+      const { error } = await supabase.from('transactions').insert([{ ...t, user_id: user!.id } as any]);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
