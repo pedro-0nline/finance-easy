@@ -7,22 +7,22 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useStore } from '@/store/useStore';
+import { useAddTransaction } from '@/hooks/useSupabaseData';
 import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import type { TransactionType, Category, PaymentMethod } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 export default function NewTransactionPage() {
   const navigate = useNavigate();
-  const { addTransaction } = useStore();
+  const addTransaction = useAddTransaction();
   const [step, setStep] = useState(1);
-  const [type, setType] = useState<TransactionType>('expense');
+  const [type, setType] = useState('expense');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<Category>('food');
+  const [category, setCategory] = useState('food');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
+  const [paymentMethod, setPaymentMethod] = useState('pix');
   const [isInstallment, setIsInstallment] = useState(false);
   const [totalInstallments, setTotalInstallments] = useState('2');
   const [notes, setNotes] = useState('');
@@ -31,57 +31,52 @@ export default function NewTransactionPage() {
   const installments = parseInt(totalInstallments) || 2;
   const perInstallment = amountNum / installments;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!description || !amountNum) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
 
-    if (isInstallment) {
-      for (let i = 0; i < installments; i++) {
-        addTransaction({
-          id: `new-${Date.now()}-${i}`,
-          userId: 'u1',
-          type,
-          category,
-          description,
-          amount: perInstallment,
-          paymentMethod,
+    try {
+      if (isInstallment) {
+        const groupId = crypto.randomUUID();
+        for (let i = 0; i < installments; i++) {
+          await addTransaction.mutateAsync({
+            type, category, description,
+            amount: perInstallment,
+            payment_method: paymentMethod,
+            date,
+            is_installment: true,
+            installment_number: i + 1,
+            total_installments: installments,
+            installment_group_id: groupId,
+            is_shared: false,
+            is_paid: false,
+          });
+        }
+      } else {
+        await addTransaction.mutateAsync({
+          type, category, description,
+          amount: amountNum,
+          payment_method: paymentMethod,
           date,
-          isInstallment: true,
-          installmentNumber: i + 1,
-          totalInstallments: installments,
-          installmentGroupId: `inst-${Date.now()}`,
-          isShared: false,
-          isPaid: false,
+          is_installment: false,
+          is_shared: false,
+          is_paid: false,
+          notes: notes || undefined,
         });
       }
-    } else {
-      addTransaction({
-        id: `new-${Date.now()}`,
-        userId: 'u1',
-        type,
-        category,
-        description,
-        amount: amountNum,
-        paymentMethod,
-        date,
-        isInstallment: false,
-        isShared: false,
-        isPaid: false,
-        notes: notes || undefined,
-      });
+      toast.success('Transação salva com sucesso!');
+      navigate('/transactions');
+    } catch {
+      toast.error('Erro ao salvar. Tente novamente.');
     }
-
-    toast.success('Transação salva com sucesso!');
-    navigate('/transactions');
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <h1 className="text-2xl font-bold">Nova Transação</h1>
 
-      {/* Step indicators */}
       <div className="flex items-center gap-2">
         <div className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
         <div className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
@@ -94,7 +89,7 @@ export default function NewTransactionPage() {
             <div>
               <Label>Tipo</Label>
               <div className="grid grid-cols-4 gap-2 mt-1">
-                {(['income', 'expense', 'recurring', 'fixed'] as TransactionType[]).map((t) => (
+                {(['income', 'expense', 'recurring', 'fixed'] as const).map((t) => (
                   <Button key={t} variant={type === t ? 'default' : 'outline'} size="sm" onClick={() => setType(t)}>
                     {{ income: 'Entrada', expense: 'Saída', recurring: 'Recorrente', fixed: 'Fixo' }[t]}
                   </Button>
@@ -111,7 +106,7 @@ export default function NewTransactionPage() {
             </div>
             <div>
               <Label>Categoria</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+              <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(categoryConfig).map(([k, v]) => (
@@ -126,7 +121,7 @@ export default function NewTransactionPage() {
             </div>
             <div>
               <Label>Forma de Pagamento</Label>
-              <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(paymentMethodLabels).map(([k, v]) => (
@@ -168,21 +163,23 @@ export default function NewTransactionPage() {
               <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observações..." />
             </div>
 
-            {/* Preview */}
             <Card className="bg-muted/50">
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground mb-2">Preview da transação:</p>
                 <p className="font-medium">{description}</p>
                 <p className="text-sm text-muted-foreground">
                   {isInstallment ? `${installments}x de R$ ${perInstallment.toFixed(2)}` : `R$ ${amountNum.toFixed(2)}`}
-                  {' · '}{categoryConfig[category].label}
+                  {' · '}{categoryConfig[category as keyof typeof categoryConfig]?.label}
                 </p>
               </CardContent>
             </Card>
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Voltar</Button>
-              <Button className="flex-1" onClick={handleSave}>Salvar</Button>
+              <Button className="flex-1" onClick={handleSave} disabled={addTransaction.isPending}>
+                {addTransaction.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
+                Salvar
+              </Button>
             </div>
           </CardContent>
         </Card>

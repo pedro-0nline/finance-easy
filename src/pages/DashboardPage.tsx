@@ -1,72 +1,97 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { KPICard } from '@/components/KPICard';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { AmountBadge } from '@/components/AmountBadge';
-import { TransactionTypeBadge, PaymentMethodBadge, InstallmentBadge } from '@/components/Badges';
+import { InstallmentBadge } from '@/components/Badges';
 import { ProgressBar } from '@/components/ProgressBar';
-import { useStore } from '@/store/useStore';
+import { useTransactions, useBankAccounts, useCreditCards, useBudgets } from '@/hooks/useSupabaseData';
 import { categoryConfig } from '@/lib/categories';
-import { weeklyData } from '@/data/mock';
-import { format, parseISO, isAfter } from 'date-fns';
+import { format, parseISO, isAfter, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Category } from '@/types';
 
 const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
 export default function DashboardPage() {
-  const { transactions, bankAccounts, creditCards, budgets } = useStore();
+  const { data: transactions = [], isLoading: tLoading } = useTransactions();
+  const { data: bankAccounts = [], isLoading: bLoading } = useBankAccounts();
+  const { data: creditCards = [] } = useCreditCards();
+  const { data: budgets = [] } = useBudgets();
 
-  const totalBalance = bankAccounts.reduce((s, a) => s + a.balance, 0);
+  const totalBalance = bankAccounts.reduce((s, a) => s + Number(a.balance), 0);
   const now = new Date();
   const currentMonth = format(now, 'yyyy-MM');
 
   const monthTxns = transactions.filter((t) => t.date.startsWith(currentMonth));
-  const income = monthTxns.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const expenses = monthTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + t.amount, 0);
+  const income = monthTxns.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const expenses = monthTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + Number(t.amount), 0);
   const net = income - expenses;
 
   const upcoming = transactions
-    .filter((t) => !t.isPaid && isAfter(parseISO(t.date), now))
+    .filter((t) => !t.is_paid && isAfter(parseISO(t.date), now))
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 5);
 
   const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
 
+  const weeklyData = useMemo(() => {
+    return Array.from({ length: 8 }, (_, i) => {
+      const weekStart = startOfWeek(subWeeks(now, 7 - i));
+      const weekEnd = endOfWeek(subWeeks(now, 7 - i));
+      const weekTxns = transactions.filter((t) => {
+        const d = parseISO(t.date);
+        return d >= weekStart && d <= weekEnd;
+      });
+      return {
+        week: format(weekStart, 'dd/MM'),
+        entradas: weekTxns.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
+        saidas: weekTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + Number(t.amount), 0),
+      };
+    });
+  }, [transactions]);
+
   const categorySpending = useMemo(() => {
     const map: Record<string, number> = {};
     monthTxns.filter((t) => t.type !== 'income').forEach((t) => {
-      map[t.category] = (map[t.category] || 0) + t.amount;
+      map[t.category] = (map[t.category] || 0) + Number(t.amount);
     });
     return Object.entries(map).map(([cat, value]) => ({
-      name: categoryConfig[cat as Category].label,
+      name: categoryConfig[cat as Category]?.label ?? cat,
       value,
-      color: categoryConfig[cat as Category].color,
+      color: categoryConfig[cat as Category]?.color ?? '#94A3B8',
     }));
   }, [monthTxns]);
 
   const alerts = [
-    ...budgets.filter((b) => b.spent / b.limit > 0.9).map((b) => ({
+    ...budgets.filter((b) => Number(b.spent) / Number(b.budget_limit) > 0.9).map((b) => ({
       id: b.id,
-      text: `Orçamento de ${categoryConfig[b.category].label} em ${Math.round((b.spent / b.limit) * 100)}%`,
+      text: `Orçamento de ${categoryConfig[b.category as Category]?.label} em ${Math.round((Number(b.spent) / Number(b.budget_limit)) * 100)}%`,
       type: 'budget' as const,
     })),
-    ...creditCards.filter((c) => c.used / c.limit > 0.7).map((c) => ({
+    ...creditCards.filter((c) => Number(c.used) / Number(c.credit_limit) > 0.7).map((c) => ({
       id: c.id,
-      text: `${c.name} em ${Math.round((c.used / c.limit) * 100)}% do limite`,
+      text: `${c.name} em ${Math.round((Number(c.used) / Number(c.credit_limit)) * 100)}% do limite`,
       type: 'card' as const,
     })),
   ];
+
+  if (tLoading || bLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard title="Saldo Total" value={fmt(totalBalance)} trend={5.2} icon={Wallet} iconColor="#6366F1" />
         <KPICard title="Entradas" value={fmt(income)} trend={12.5} icon={TrendingUp} iconColor="#22C55E" />
@@ -74,7 +99,6 @@ export default function DashboardPage() {
         <KPICard title="Saldo Líquido" value={fmt(net)} trend={net > 0 ? 8.1 : -8.1} icon={DollarSign} iconColor={net >= 0 ? '#22C55E' : '#EF4444'} />
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <Card className="lg:col-span-3 animate-fade-in">
           <CardHeader><CardTitle className="text-base">Entradas vs Saídas (8 semanas)</CardTitle></CardHeader>
@@ -115,7 +139,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Upcoming + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="animate-fade-in">
           <CardHeader><CardTitle className="text-base">Próximos Vencimentos</CardTitle></CardHeader>
@@ -124,13 +147,13 @@ export default function DashboardPage() {
             {upcoming.map((t) => (
               <div key={t.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category} size={14} />
+                  <CategoryIcon category={t.category as Category} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), "dd 'de' MMM", { locale: ptBR })}</p>
                   </div>
                 </div>
-                <AmountBadge amount={t.amount} type="expense" />
+                <AmountBadge amount={Number(t.amount)} type="expense" />
               </div>
             ))}
           </CardContent>
@@ -150,7 +173,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Transactions */}
       <Card className="animate-fade-in">
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle className="text-base">Transações Recentes</CardTitle>
@@ -165,18 +187,19 @@ export default function DashboardPage() {
             {recent.map((t) => (
               <div key={t.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category} size={14} />
+                  <CategoryIcon category={t.category as Category} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), 'dd/MM/yyyy')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {t.isInstallment && <InstallmentBadge current={t.installmentNumber!} total={t.totalInstallments!} />}
-                  <AmountBadge amount={t.amount} type={t.type === 'income' ? 'income' : 'expense'} />
+                  {t.is_installment && <InstallmentBadge current={t.installment_number!} total={t.total_installments!} />}
+                  <AmountBadge amount={Number(t.amount)} type={t.type === 'income' ? 'income' : 'expense'} />
                 </div>
               </div>
             ))}
+            {recent.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma transação ainda</p>}
           </div>
         </CardContent>
       </Card>
