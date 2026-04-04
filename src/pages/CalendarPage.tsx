@@ -102,7 +102,7 @@ export default function CalendarPage() {
             <div className="space-y-2">
               {selectedTxns.map((t) => (
                 <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg bg-accent/50">
-                  <CategoryIcon category={t.category as Category} size={12} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={12} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{t.description}</p>
                   </div>

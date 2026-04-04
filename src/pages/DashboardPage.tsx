@@ -149,7 +149,7 @@ export default function DashboardPage() {
             {upcoming.map((t) => (
               <div key={t.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category as Category} size={14} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), "dd 'de' MMM", { locale: ptBR })}</p>
@@ -189,7 +189,7 @@ export default function DashboardPage() {
             {recent.map((t) => (
               <div key={t.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category as Category} size={14} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), 'dd/MM/yyyy')}</p>

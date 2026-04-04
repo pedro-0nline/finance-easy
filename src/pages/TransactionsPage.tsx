@@ -123,7 +123,7 @@ export default function TransactionsPage() {
                 <CardContent className="p-0 divide-y divide-border">
                   {txns.map((t) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors">
-                      <CategoryIcon category={t.category as Category} size={14} />
+                      <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium truncate">{t.description}</p>

@@ -79,7 +79,7 @@ export default function BudgetPage() {
             <Card key={b.id} className="animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <CategoryIcon category={b.category as Category} size={16} />
+                  <CategoryIconBySlug category={b.category} categories={allCategories} size={16} />
                   <div className="flex-1">
                     <p className="font-medium text-sm">{categoryConfig[b.category as Category]?.label}</p>
                     <p className="text-xs text-muted-foreground">{fmt(Number(b.spent))} de {fmt(Number(b.budget_limit))}</p>
