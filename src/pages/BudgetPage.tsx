@@ -5,7 +5,7 @@ import { CategoryIconBySlug } from '@/components/CategoryIcon';
 import { useAllCategories } from '@/hooks/useCategories';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useBudgets } from '@/hooks/useSupabaseData';
-import { categoryConfig } from '@/lib/categories';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, subMonths, addMonths } from 'date-fns';

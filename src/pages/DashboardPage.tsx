@@ -11,7 +11,7 @@ import { AmountBadge } from '@/components/AmountBadge';
 import { InstallmentBadge } from '@/components/Badges';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useTransactions, useBankAccounts, useCreditCards, useBudgets } from '@/hooks/useSupabaseData';
-import { categoryConfig } from '@/lib/categories';
+
 import { format, parseISO, isAfter, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Category } from '@/types';
