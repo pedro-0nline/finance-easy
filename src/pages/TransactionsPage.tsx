@@ -12,7 +12,7 @@ import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { TransactionTypeBadge, PaymentMethodBadge, InstallmentBadge } from '@/components/Badges';
 import { useTransactions, useTogglePaid, useDeleteTransaction } from '@/hooks/useSupabaseData';
-import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
+import { paymentMethodLabels } from '@/lib/categories';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Category } from '@/types';
