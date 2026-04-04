@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const { data: bankAccounts = [], isLoading: bLoading } = useBankAccounts();
   const { data: creditCards = [] } = useCreditCards();
   const { data: budgets = [] } = useBudgets();
+  const { allCategories } = useAllCategories();
 
   const totalBalance = bankAccounts.reduce((s, a) => s + Number(a.balance), 0);
   const now = new Date();
