@@ -1,24 +1,35 @@
-import { UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal, type LucideIcon } from 'lucide-react';
-import type { Category } from '@/types';
-import { categoryConfig } from '@/lib/categories';
+import {
+  UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal,
+  Tag, ShoppingCart, Coffee, Briefcase, Music, Plane, Gift, BookOpen, Smartphone,
+  Dumbbell, Baby, PawPrint, Wrench, Scissors, Shirt, Flame, Droplets,
+  type LucideIcon,
+} from 'lucide-react';
 
 const iconMap: Record<string, LucideIcon> = {
   UtensilsCrossed, Heart, Car, GraduationCap, Gamepad2, Home, Zap, MoreHorizontal,
+  Tag, ShoppingCart, Coffee, Briefcase, Music, Plane, Gift, BookOpen, Smartphone,
+  Dumbbell, Baby, PawPrint, Wrench, Scissors, Shirt, Flame, Droplets,
 };
 
+export const availableIcons = Object.keys(iconMap);
+
+export function getIconComponent(iconName: string): LucideIcon {
+  return iconMap[iconName] || Tag;
+}
+
 interface CategoryIconProps {
-  category: Category;
+  icon: string;
+  color: string;
   size?: number;
   className?: string;
 }
 
-export function CategoryIcon({ category, size = 18, className }: CategoryIconProps) {
-  const config = categoryConfig[category];
-  const Icon = iconMap[config.icon];
+export function CategoryIcon({ icon, color, size = 18, className }: CategoryIconProps) {
+  const Icon = getIconComponent(icon);
   return (
     <div
       className={`inline-flex items-center justify-center rounded-lg ${className}`}
-      style={{ backgroundColor: config.color + '20', color: config.color, width: size + 14, height: size + 14 }}
+      style={{ backgroundColor: color + '20', color, width: size + 14, height: size + 14 }}
     >
       <Icon size={size} />
     </div>
