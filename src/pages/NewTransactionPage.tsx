@@ -18,6 +18,7 @@ import { Loader2 } from 'lucide-react';
 export default function NewTransactionPage() {
   const navigate = useNavigate();
   const addTransaction = useAddTransaction();
+  const { allCategories } = useAllCategories();
   const [step, setStep] = useState(1);
   const [type, setType] = useState('expense');
   const [description, setDescription] = useState('');
