@@ -63,16 +63,16 @@ export default function DashboardPage() {
       map[t.category] = (map[t.category] || 0) + Number(t.amount);
     });
     return Object.entries(map).map(([cat, value]) => ({
-      name: categoryConfig[cat as Category]?.label ?? cat,
+      name: allCategories[cat]?.label ?? cat,
       value,
-      color: categoryConfig[cat as Category]?.color ?? '#94A3B8',
+      color: allCategories[cat]?.color ?? '#94A3B8',
     }));
   }, [monthTxns]);
 
   const alerts = [
     ...budgets.filter((b) => Number(b.spent) / Number(b.budget_limit) > 0.9).map((b) => ({
       id: b.id,
-      text: `Orçamento de ${categoryConfig[b.category as Category]?.label} em ${Math.round((Number(b.spent) / Number(b.budget_limit)) * 100)}%`,
+      text: `Orçamento de ${allCategories[b.category]?.label} em ${Math.round((Number(b.spent) / Number(b.budget_limit)) * 100)}%`,
       type: 'budget' as const,
     })),
     ...creditCards.filter((c) => Number(c.used) / Number(c.credit_limit) > 0.7).map((c) => ({

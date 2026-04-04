@@ -82,7 +82,7 @@ export default function BudgetPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <CategoryIconBySlug category={b.category} categories={allCategories} size={16} />
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{categoryConfig[b.category as Category]?.label}</p>
+                    <p className="font-medium text-sm">{allCategories[b.category]?.label}</p>
                     <p className="text-xs text-muted-foreground">{fmt(Number(b.spent))} de {fmt(Number(b.budget_limit))}</p>
                   </div>
                   <span className={`text-sm font-bold ${pct > 90 ? 'text-destructive' : pct > 70 ? 'text-warning' : 'text-success'}`}>
