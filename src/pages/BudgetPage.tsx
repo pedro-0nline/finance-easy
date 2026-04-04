@@ -16,6 +16,7 @@ const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigi
 
 export default function BudgetPage() {
   const { data: budgets = [], isLoading } = useBudgets();
+  const { allCategories } = useAllCategories();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const monthStr = format(selectedMonth, 'yyyy-MM');

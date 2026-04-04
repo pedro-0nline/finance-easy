@@ -19,6 +19,7 @@ import type { Category } from '@/types';
 
 export default function TransactionsPage() {
   const { data: transactions = [], isLoading } = useTransactions();
+  const { allCategories } = useAllCategories();
   const togglePaid = useTogglePaid();
   const deleteTxn = useDeleteTransaction();
   const [search, setSearch] = useState('');

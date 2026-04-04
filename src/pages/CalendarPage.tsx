@@ -12,6 +12,7 @@ import type { Category } from '@/types';
 
 export default function CalendarPage() {
   const { data: transactions = [], isLoading } = useTransactions();
+  const { allCategories } = useAllCategories();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
