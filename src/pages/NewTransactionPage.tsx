@@ -175,7 +175,7 @@ export default function NewTransactionPage() {
                 <p className="font-medium">{description}</p>
                 <p className="text-sm text-muted-foreground">
                   {isInstallment ? `${installments}x de R$ ${perInstallment.toFixed(2)}` : `R$ ${amountNum.toFixed(2)}`}
-                  {' · '}{categoryConfig[category as keyof typeof categoryConfig]?.label}
+                  {' · '}{allCategories[category]?.label ?? category}
                 </p>
               </CardContent>
             </Card>
