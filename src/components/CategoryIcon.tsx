@@ -35,3 +35,16 @@ export function CategoryIcon({ icon, color, size = 18, className }: CategoryIcon
     </div>
   );
 }
+
+/** Convenience: resolve category slug to icon+color using a categories map */
+interface CategoryIconBySlugProps {
+  category: string;
+  categories: Record<string, { icon: string; color: string; label: string }>;
+  size?: number;
+  className?: string;
+}
+
+export function CategoryIconBySlug({ category, categories, size, className }: CategoryIconBySlugProps) {
+  const config = categories[category] || { icon: 'Tag', color: '#94A3B8', label: category };
+  return <CategoryIcon icon={config.icon} color={config.color} size={size} className={className} />;
+}
