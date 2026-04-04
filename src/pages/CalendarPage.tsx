@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { useTransactions } from '@/hooks/useSupabaseData';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
@@ -11,6 +12,7 @@ import type { Category } from '@/types';
 
 export default function CalendarPage() {
   const { data: transactions = [], isLoading } = useTransactions();
+  const { allCategories } = useAllCategories();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
@@ -101,7 +103,7 @@ export default function CalendarPage() {
             <div className="space-y-2">
               {selectedTxns.map((t) => (
                 <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg bg-accent/50">
-                  <CategoryIcon category={t.category as Category} size={12} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={12} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{t.description}</p>
                   </div>

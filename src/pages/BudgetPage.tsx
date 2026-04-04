@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useBudgets } from '@/hooks/useSupabaseData';
-import { categoryConfig } from '@/lib/categories';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, subMonths, addMonths } from 'date-fns';
@@ -15,6 +16,7 @@ const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigi
 
 export default function BudgetPage() {
   const { data: budgets = [], isLoading } = useBudgets();
+  const { allCategories } = useAllCategories();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const monthStr = format(selectedMonth, 'yyyy-MM');
@@ -78,9 +80,9 @@ export default function BudgetPage() {
             <Card key={b.id} className="animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <CategoryIcon category={b.category as Category} size={16} />
+                  <CategoryIconBySlug category={b.category} categories={allCategories} size={16} />
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{categoryConfig[b.category as Category]?.label}</p>
+                    <p className="font-medium text-sm">{allCategories[b.category]?.label}</p>
                     <p className="text-xs text-muted-foreground">{fmt(Number(b.spent))} de {fmt(Number(b.budget_limit))}</p>
                   </div>
                   <span className={`text-sm font-bold ${pct > 90 ? 'text-destructive' : pct > 70 ? 'text-warning' : 'text-success'}`}>

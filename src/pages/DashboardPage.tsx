@@ -5,12 +5,13 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { KPICard } from '@/components/KPICard';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { InstallmentBadge } from '@/components/Badges';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useTransactions, useBankAccounts, useCreditCards, useBudgets } from '@/hooks/useSupabaseData';
-import { categoryConfig } from '@/lib/categories';
+
 import { format, parseISO, isAfter, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Category } from '@/types';
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const { data: bankAccounts = [], isLoading: bLoading } = useBankAccounts();
   const { data: creditCards = [] } = useCreditCards();
   const { data: budgets = [] } = useBudgets();
+  const { allCategories } = useAllCategories();
 
   const totalBalance = bankAccounts.reduce((s, a) => s + Number(a.balance), 0);
   const now = new Date();
@@ -61,16 +63,16 @@ export default function DashboardPage() {
       map[t.category] = (map[t.category] || 0) + Number(t.amount);
     });
     return Object.entries(map).map(([cat, value]) => ({
-      name: categoryConfig[cat as Category]?.label ?? cat,
+      name: allCategories[cat]?.label ?? cat,
       value,
-      color: categoryConfig[cat as Category]?.color ?? '#94A3B8',
+      color: allCategories[cat]?.color ?? '#94A3B8',
     }));
   }, [monthTxns]);
 
   const alerts = [
     ...budgets.filter((b) => Number(b.spent) / Number(b.budget_limit) > 0.9).map((b) => ({
       id: b.id,
-      text: `Orçamento de ${categoryConfig[b.category as Category]?.label} em ${Math.round((Number(b.spent) / Number(b.budget_limit)) * 100)}%`,
+      text: `Orçamento de ${allCategories[b.category]?.label} em ${Math.round((Number(b.spent) / Number(b.budget_limit)) * 100)}%`,
       type: 'budget' as const,
     })),
     ...creditCards.filter((c) => Number(c.used) / Number(c.credit_limit) > 0.7).map((c) => ({
@@ -147,7 +149,7 @@ export default function DashboardPage() {
             {upcoming.map((t) => (
               <div key={t.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category as Category} size={14} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), "dd 'de' MMM", { locale: ptBR })}</p>
@@ -187,7 +189,7 @@ export default function DashboardPage() {
             {recent.map((t) => (
               <div key={t.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div className="flex items-center gap-3">
-                  <CategoryIcon category={t.category as Category} size={14} />
+                  <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                   <div>
                     <p className="text-sm font-medium">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), 'dd/MM/yyyy')}</p>

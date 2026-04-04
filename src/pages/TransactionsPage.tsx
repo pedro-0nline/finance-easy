@@ -7,17 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { TransactionTypeBadge, PaymentMethodBadge, InstallmentBadge } from '@/components/Badges';
 import { useTransactions, useTogglePaid, useDeleteTransaction } from '@/hooks/useSupabaseData';
-import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
+import { paymentMethodLabels } from '@/lib/categories';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Category } from '@/types';
 
 export default function TransactionsPage() {
   const { data: transactions = [], isLoading } = useTransactions();
+  const { allCategories } = useAllCategories();
   const togglePaid = useTogglePaid();
   const deleteTxn = useDeleteTransaction();
   const [search, setSearch] = useState('');
@@ -83,7 +85,7 @@ export default function TransactionsPage() {
               <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {Object.entries(categoryConfig).map(([k, v]) => (
+                {Object.entries(allCategories).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v.label}</SelectItem>
                 ))}
               </SelectContent>
@@ -122,7 +124,7 @@ export default function TransactionsPage() {
                 <CardContent className="p-0 divide-y divide-border">
                   {txns.map((t) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors">
-                      <CategoryIcon category={t.category as Category} size={14} />
+                      <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium truncate">{t.description}</p>

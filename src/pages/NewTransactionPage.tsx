@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useAddTransaction } from '@/hooks/useSupabaseData';
-import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
+import { useAllCategories } from '@/hooks/useCategories';
+import { paymentMethodLabels } from '@/lib/categories';
+import { AddCategoryDialog } from '@/components/AddCategoryDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
@@ -16,6 +18,7 @@ import { Loader2 } from 'lucide-react';
 export default function NewTransactionPage() {
   const navigate = useNavigate();
   const addTransaction = useAddTransaction();
+  const { allCategories } = useAllCategories();
   const [step, setStep] = useState(1);
   const [type, setType] = useState('expense');
   const [description, setDescription] = useState('');
@@ -105,11 +108,14 @@ export default function NewTransactionPage() {
               <Input id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" type="text" inputMode="decimal" />
             </div>
             <div>
-              <Label>Categoria</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Categoria</Label>
+                <AddCategoryDialog onCreated={(slug) => setCategory(slug)} />
+              </div>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(categoryConfig).map(([k, v]) => (
+                  {Object.entries(allCategories).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -169,7 +175,7 @@ export default function NewTransactionPage() {
                 <p className="font-medium">{description}</p>
                 <p className="text-sm text-muted-foreground">
                   {isInstallment ? `${installments}x de R$ ${perInstallment.toFixed(2)}` : `R$ ${amountNum.toFixed(2)}`}
-                  {' · '}{categoryConfig[category as keyof typeof categoryConfig]?.label}
+                  {' · '}{allCategories[category]?.label ?? category}
                 </p>
               </CardContent>
             </Card>
