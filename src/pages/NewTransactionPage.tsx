@@ -108,11 +108,14 @@ export default function NewTransactionPage() {
               <Input id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" type="text" inputMode="decimal" />
             </div>
             <div>
-              <Label>Categoria</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Categoria</Label>
+                <AddCategoryDialog onCreated={(slug) => setCategory(slug)} />
+              </div>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(categoryConfig).map(([k, v]) => (
+                  {Object.entries(allCategories).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>
