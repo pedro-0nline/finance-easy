@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useBudgets } from '@/hooks/useSupabaseData';
 import { categoryConfig } from '@/lib/categories';

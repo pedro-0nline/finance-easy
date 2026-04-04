@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CategoryIcon } from '@/components/CategoryIcon';
+import { CategoryIconBySlug } from '@/components/CategoryIcon';
+import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { useTransactions } from '@/hooks/useSupabaseData';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
