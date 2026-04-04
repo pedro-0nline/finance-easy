@@ -85,7 +85,7 @@ export default function TransactionsPage() {
               <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {Object.entries(categoryConfig).map(([k, v]) => (
+                {Object.entries(allCategories).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v.label}</SelectItem>
                 ))}
               </SelectContent>
