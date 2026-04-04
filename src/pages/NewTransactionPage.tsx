@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useAddTransaction } from '@/hooks/useSupabaseData';
-import { categoryConfig, paymentMethodLabels } from '@/lib/categories';
+import { useAllCategories } from '@/hooks/useCategories';
+import { paymentMethodLabels } from '@/lib/categories';
+import { AddCategoryDialog } from '@/components/AddCategoryDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
