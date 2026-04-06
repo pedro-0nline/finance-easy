@@ -5,19 +5,26 @@ import { CategoryIconBySlug } from '@/components/CategoryIcon';
 import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { useTransactions } from '@/hooks/useSupabaseData';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, parseISO, isSameDay, addMonths, subMonths } from 'date-fns';
+import { useGoogleCalendarEvents, useIsGoogleConnected } from '@/hooks/useGoogleCalendar';
+import { ChevronLeft, ChevronRight, Loader2, CalendarDays } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { Category } from '@/types';
 
 export default function CalendarPage() {
   const { data: transactions = [], isLoading } = useTransactions();
   const { allCategories } = useAllCategories();
+  const { isConnected: googleConnected } = useIsGoogleConnected();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const start = startOfMonth(currentMonth);
   const end = endOfMonth(currentMonth);
+
+  const { data: googleEvents = [] } = useGoogleCalendarEvents(
+    format(start, 'yyyy-MM-dd'),
+    format(end, 'yyyy-MM-dd')
+  );
+
   const days = eachDayOfInterval({ start, end });
   const startPad = getDay(start);
 
@@ -31,7 +38,18 @@ export default function CalendarPage() {
     return map;
   }, [transactions]);
 
+  const googleByDay = useMemo(() => {
+    const map = new Map<string, typeof googleEvents>();
+    googleEvents.forEach((e) => {
+      const dateStr = (e.start.dateTime || e.start.date || '').split('T')[0];
+      if (!map.has(dateStr)) map.set(dateStr, []);
+      map.get(dateStr)!.push(e);
+    });
+    return map;
+  }, [googleEvents]);
+
   const selectedTxns = selectedDay ? txnsByDay.get(format(selectedDay, 'yyyy-MM-dd')) || [] : [];
+  const selectedGoogleEvents = selectedDay ? googleByDay.get(format(selectedDay, 'yyyy-MM-dd')) || [] : [];
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
