@@ -8,13 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsGoogleConnected } from '@/hooks/useGoogleCalendar';
 import { useProfile } from '@/hooks/useSupabaseData';
 import { User, Calendar, Moon, Sun, Globe, Webhook, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useStore();
-  const { user, signOut } = useAuth();
+  const { user, signOut, signInWithGoogle } = useAuth();
+  const { isConnected: googleConnected } = useIsGoogleConnected();
   const { data: profile } = useProfile();
 
   useEffect(() => {
@@ -50,9 +52,15 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Status</p>
-              <p className="text-xs text-muted-foreground">Desconectado</p>
+              <p className={`text-xs ${googleConnected ? 'text-green-500' : 'text-muted-foreground'}`}>
+                {googleConnected ? 'Conectado' : 'Desconectado'}
+              </p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => toast.info('Integração mock — conectado com sucesso!')}>Conectar</Button>
+            {!googleConnected ? (
+              <Button variant="outline" size="sm" onClick={signInWithGoogle}>Conectar</Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">Via login Google</span>
+            )}
           </div>
         </CardContent>
       </Card>
