@@ -71,6 +71,7 @@ export default function CalendarPage() {
         <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-destructive" /> Saída</span>
         <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-warning" /> Vencimento</span>
         <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" /> Parcela</span>
+        {googleConnected && <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Google</span>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -90,6 +91,7 @@ export default function CalendarPage() {
                 const hasIncome = dayTxns.some((t) => t.type === 'income');
                 const hasExpense = dayTxns.some((t) => t.type !== 'income');
                 const hasInstallment = dayTxns.some((t) => t.is_installment);
+                const hasGoogleEvent = googleByDay.has(key);
 
                 return (
                   <button
@@ -104,6 +106,7 @@ export default function CalendarPage() {
                       {hasIncome && <div className="w-1.5 h-1.5 rounded-full bg-success" />}
                       {hasExpense && <div className="w-1.5 h-1.5 rounded-full bg-destructive" />}
                       {hasInstallment && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                      {hasGoogleEvent && <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
                     </div>
                   </button>
                 );
@@ -117,8 +120,21 @@ export default function CalendarPage() {
             <h3 className="font-semibold text-sm mb-3">
               {selectedDay ? format(selectedDay, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione um dia'}
             </h3>
-            {selectedTxns.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma transação neste dia</p>}
+            {selectedTxns.length === 0 && selectedGoogleEvents.length === 0 && <p className="text-sm text-muted-foreground">Nenhum evento neste dia</p>}
             <div className="space-y-2">
+              {selectedGoogleEvents.map((e) => (
+                <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <CalendarDays size={14} className="text-blue-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{e.summary}</p>
+                    {e.start.dateTime && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {format(new Date(e.start.dateTime), 'HH:mm')} - {format(new Date(e.end.dateTime!), 'HH:mm')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
               {selectedTxns.map((t) => (
                 <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg bg-accent/50">
                   <CategoryIconBySlug category={t.category} categories={allCategories} size={12} />
