@@ -76,7 +76,15 @@ export default function AuthPage() {
             Continuar com Google
           </Button>
 
-          <div className="text-center mt-4">
+          <p className="text-xs text-muted-foreground text-center mt-4 leading-relaxed">
+            Ao continuar com o Google, você concorda com nossos{' '}
+            <a href="/termos" className="text-primary hover:underline">Termos de Uso</a> e{' '}
+            <a href="/privacidade" className="text-primary hover:underline">Política de Privacidade</a>, e com os{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Termos de Serviço</a> e{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Política de Privacidade</a> do Google.
+          </p>
+
+          <div className="text-center mt-3">
             <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-primary hover:underline">
               {isLogin ? 'Não tem conta? Criar uma' : 'Já tem conta? Entrar'}
             </button>

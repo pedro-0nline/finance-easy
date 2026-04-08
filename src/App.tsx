@@ -16,6 +16,8 @@ import AccountsPage from "@/pages/AccountsPage";
 import InsightsPage from "@/pages/InsightsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
+import PrivacyPage from "@/pages/PrivacyPage";
+import TermsPage from "@/pages/TermsPage";
 import NotFound from "@/pages/NotFound";
 import { useEffect } from "react";
 import { useStore } from "@/store/useStore";
@@ -80,6 +82,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/privacidade" element={<PrivacyPage />} />
+              <Route path="/termos" element={<TermsPage />} />
               <Route path="/*" element={<ProtectedRoutes />} />
             </Routes>
           </BrowserRouter>
