@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, PiggyBank, Target, Settings } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, CalendarDays, PiggyBank, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const items = [
   { title: 'Home', url: '/', icon: LayoutDashboard },
   { title: 'Transações', url: '/transactions', icon: ArrowLeftRight },
+  { title: 'Calendário', url: '/calendar', icon: CalendarDays },
   { title: 'Orçamento', url: '/budget', icon: PiggyBank },
   { title: 'Metas', url: '/goals', icon: Target },
-  { title: 'Config', url: '/settings', icon: Settings },
 ];
 
 export function MobileBottomNav() {
