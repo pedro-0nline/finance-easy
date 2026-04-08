@@ -127,6 +127,18 @@ export function useAddGoalProgress() {
   });
 }
 
+export function useCreateGoal() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (goal: { title: string; target_amount: number; deadline: string; color: string }) => {
+      const { error } = await supabase.from('goals').insert([{ ...goal, user_id: user!.id }]);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
+  });
+}
+
 // ─── Groups ──────────────────────────────────────────────────
 export function useGroups() {
   const { user } = useAuth();
