@@ -18,6 +18,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 import { useEffect } from "react";
 import { useStore } from "@/store/useStore";
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/auth" element={<AuthRoute />} />
               <Route path="/privacidade" element={<PrivacyPage />} />
               <Route path="/termos" element={<TermsPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/*" element={<ProtectedRoutes />} />
             </Routes>
           </BrowserRouter>
