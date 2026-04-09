@@ -59,7 +59,7 @@ export default function TransactionsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Transações</h1>
-        <Link to="/transactions/new">
+        <Link to="/app/transactions/new">
           <Button size="sm" className="gap-1"><Plus size={16} /> Nova</Button>
         </Link>
       </div>
