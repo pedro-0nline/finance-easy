@@ -51,16 +51,16 @@ function ProtectedRoutes() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/transactions" element={<TransactionsPage />} />
-        <Route path="/transactions/new" element={<NewTransactionPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/budget" element={<BudgetPage />} />
-        <Route path="/goals" element={<GoalsPage />} />
-        <Route path="/groups" element={<GroupsPage />} />
-        <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/insights" element={<InsightsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="transactions" element={<TransactionsPage />} />
+        <Route path="transactions/new" element={<NewTransactionPage />} />
+        <Route path="calendar" element={<CalendarPage />} />
+        <Route path="budget" element={<BudgetPage />} />
+        <Route path="goals" element={<GoalsPage />} />
+        <Route path="groups" element={<GroupsPage />} />
+        <Route path="accounts" element={<AccountsPage />} />
+        <Route path="insights" element={<InsightsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
