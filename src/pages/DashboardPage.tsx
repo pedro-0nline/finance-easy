@@ -178,7 +178,7 @@ export default function DashboardPage() {
       <Card className="animate-fade-in">
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle className="text-base">Transações Recentes</CardTitle>
-          <Link to="/transactions">
+          <Link to="/app/transactions">
             <Button variant="ghost" size="sm" className="gap-1 text-xs">
               Ver todas <ArrowRight size={14} />
             </Button>

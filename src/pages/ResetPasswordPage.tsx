@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
     } else {
       setDone(true);
       toast.success('Senha atualizada com sucesso!');
-      setTimeout(() => navigate('/'), 2000);
+      setTimeout(() => navigate('/app'), 2000);
     }
     setLoading(false);
   };

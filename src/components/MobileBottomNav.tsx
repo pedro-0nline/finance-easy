@@ -8,18 +8,18 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const mainItems = [
-  { title: 'Home', url: '/', icon: LayoutDashboard },
-  { title: 'Transações', url: '/transactions', icon: ArrowLeftRight },
-  { title: 'Calendário', url: '/calendar', icon: CalendarDays },
-  { title: 'Orçamento', url: '/budget', icon: PiggyBank },
+  { title: 'Home', url: '/app', icon: LayoutDashboard },
+  { title: 'Transações', url: '/app/transactions', icon: ArrowLeftRight },
+  { title: 'Calendário', url: '/app/calendar', icon: CalendarDays },
+  { title: 'Orçamento', url: '/app/budget', icon: PiggyBank },
 ];
 
 const moreItems = [
-  { title: 'Metas', url: '/goals', icon: Target },
-  { title: 'Grupos', url: '/groups', icon: Users },
-  { title: 'Contas', url: '/accounts', icon: CreditCard },
-  { title: 'Insights', url: '/insights', icon: Sparkles },
-  { title: 'Configurações', url: '/settings', icon: Settings },
+  { title: 'Metas', url: '/app/goals', icon: Target },
+  { title: 'Grupos', url: '/app/groups', icon: Users },
+  { title: 'Contas', url: '/app/accounts', icon: CreditCard },
+  { title: 'Insights', url: '/app/insights', icon: Sparkles },
+  { title: 'Configurações', url: '/app/settings', icon: Settings },
 ];
 
 export function MobileBottomNav() {

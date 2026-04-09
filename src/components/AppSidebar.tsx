@@ -13,15 +13,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useSupabaseData';
 
 const navItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Transações', url: '/transactions', icon: ArrowLeftRight },
-  { title: 'Calendário', url: '/calendar', icon: Calendar },
-  { title: 'Orçamento', url: '/budget', icon: PiggyBank },
-  { title: 'Metas', url: '/goals', icon: Target },
-  { title: 'Grupos', url: '/groups', icon: Users },
-  { title: 'Contas', url: '/accounts', icon: CreditCard },
-  { title: 'Insights', url: '/insights', icon: Sparkles },
-  { title: 'Configurações', url: '/settings', icon: Settings },
+  { title: 'Dashboard', url: '/app', icon: LayoutDashboard },
+  { title: 'Transações', url: '/app/transactions', icon: ArrowLeftRight },
+  { title: 'Calendário', url: '/app/calendar', icon: Calendar },
+  { title: 'Orçamento', url: '/app/budget', icon: PiggyBank },
+  { title: 'Metas', url: '/app/goals', icon: Target },
+  { title: 'Grupos', url: '/app/groups', icon: Users },
+  { title: 'Contas', url: '/app/accounts', icon: CreditCard },
+  { title: 'Insights', url: '/app/insights', icon: Sparkles },
+  { title: 'Configurações', url: '/app/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -37,18 +37,18 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/app" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <Wallet size={18} className="text-primary-foreground" />
           </div>
-          {!collapsed && <span className="font-bold text-lg">FinControl</span>}
+          {!collapsed && <span className="font-bold text-lg">FinanceNew</span>}
         </Link>
       </SidebarHeader>
 
       <SidebarContent className="px-2">
         {!collapsed && (
           <div className="px-2 mb-3">
-            <Link to="/transactions/new">
+            <Link to="/app/transactions/new">
               <Button className="w-full gap-2" size="sm">
                 <Plus size={16} /> Nova Transação
               </Button>
@@ -61,7 +61,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => {
                 const isActive = location.pathname === item.url ||
-                  (item.url !== '/' && location.pathname.startsWith(item.url));
+                  (item.url !== '/app' && location.pathname.startsWith(item.url));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>

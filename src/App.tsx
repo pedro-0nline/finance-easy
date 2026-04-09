@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MainLayout } from "@/components/MainLayout";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import LandingPage from "@/pages/LandingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import NewTransactionPage from "@/pages/NewTransactionPage";
@@ -45,21 +46,21 @@ function ProtectedRoutes() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/" replace />;
 
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/transactions" element={<TransactionsPage />} />
-        <Route path="/transactions/new" element={<NewTransactionPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/budget" element={<BudgetPage />} />
-        <Route path="/goals" element={<GoalsPage />} />
-        <Route path="/groups" element={<GroupsPage />} />
-        <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/insights" element={<InsightsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="transactions" element={<TransactionsPage />} />
+        <Route path="transactions/new" element={<NewTransactionPage />} />
+        <Route path="calendar" element={<CalendarPage />} />
+        <Route path="budget" element={<BudgetPage />} />
+        <Route path="goals" element={<GoalsPage />} />
+        <Route path="groups" element={<GroupsPage />} />
+        <Route path="accounts" element={<AccountsPage />} />
+        <Route path="insights" element={<InsightsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -69,7 +70,7 @@ function ProtectedRoutes() {
 function AuthRoute() {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/app" replace />;
   return <AuthPage />;
 }
 
@@ -82,11 +83,12 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route path="/privacidade" element={<PrivacyPage />} />
               <Route path="/termos" element={<TermsPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/*" element={<ProtectedRoutes />} />
+              <Route path="/app/*" element={<ProtectedRoutes />} />
             </Routes>
           </BrowserRouter>
         </ThemeInitializer>
