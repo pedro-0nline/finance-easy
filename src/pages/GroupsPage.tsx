@@ -1,96 +1,208 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useGroups } from '@/hooks/useSupabaseData';
-import { Users, Copy, QrCode, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Users, Copy, QrCode, Loader2, Plus, LogIn, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useProfile } from '@/hooks/useSupabaseData';
 
 export default function GroupsPage() {
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+  const qc = useQueryClient();
   const { data: groups = [], isLoading } = useGroups();
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+
+  const createGroup = async () => {
+    if (!groupName || !user) return;
+    setSaving(true);
+    const code = generateCode();
+    const { data, error } = await supabase.from('groups').insert([{
+      name: groupName, owner_id: user.id, invite_code: code,
+    }]).select().single();
+    if (error) { toast.error('Erro ao criar grupo'); setSaving(false); return; }
+    // Add owner as member
+    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
+    await supabase.from('group_members').insert([{
+      group_id: data.id, user_id: user.id, role: 'owner' as const, name: displayName,
+    }]);
+    toast.success('Grupo criado!');
+    qc.invalidateQueries({ queryKey: ['groups'] });
+    setGroupName('');
+    setCreateOpen(false);
+    setSaving(false);
+  };
+
+  const joinGroup = async () => {
+    if (!inviteCode || !user) return;
+    setSaving(true);
+    const { data: found, error: findErr } = await supabase
+      .from('groups').select('id').eq('invite_code', inviteCode.toUpperCase()).maybeSingle();
+    if (findErr || !found) { toast.error('Código inválido'); setSaving(false); return; }
+    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
+    const { error } = await supabase.from('group_members').insert([{
+      group_id: found.id, user_id: user.id, role: 'viewer' as const, name: displayName,
+    }]);
+    if (error) {
+      if (error.code === '23505') toast.error('Você já faz parte deste grupo');
+      else toast.error('Erro ao entrar no grupo');
+      setSaving(false); return;
+    }
+    toast.success('Você entrou no grupo!');
+    qc.invalidateQueries({ queryKey: ['groups'] });
+    setInviteCode('');
+    setJoinOpen(false);
+    setSaving(false);
+  };
+
+  const removeMember = async (memberId: string) => {
+    const { error } = await supabase.from('group_members').delete().eq('id', memberId);
+    if (error) { toast.error('Erro ao remover membro'); return; }
+    toast.success('Membro removido');
+    qc.invalidateQueries({ queryKey: ['groups'] });
+  };
+
+  const deleteGroup = async (groupId: string) => {
+    const { error } = await supabase.from('groups').delete().eq('id', groupId);
+    if (error) { toast.error('Erro ao excluir grupo'); return; }
+    toast.success('Grupo excluído');
+    qc.invalidateQueries({ queryKey: ['groups'] });
+  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
   }
 
-  if (groups.length === 0) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Grupos Familiares</h1>
-        <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
-          <Users size={48} className="text-muted-foreground" />
-          <div>
-            <h2 className="text-lg font-semibold">Nenhum grupo</h2>
-            <p className="text-sm text-muted-foreground">Crie ou entre em um grupo familiar</p>
-          </div>
-          <div className="flex gap-3">
-            <Button>Criar novo grupo</Button>
-            <Button variant="outline">Entrar em grupo</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const group = groups[0];
-  const members = (group as any).group_members || [];
-
   const roleColors: Record<string, string> = {
     owner: 'bg-primary/10 text-primary',
-    manager: 'bg-info/10 text-info',
-    editor: 'bg-warning/10 text-warning',
+    manager: 'bg-blue-500/10 text-blue-500',
+    editor: 'bg-yellow-500/10 text-yellow-500',
     viewer: 'bg-muted text-muted-foreground',
+  };
+  const roleLabels: Record<string, string> = {
+    owner: 'Dono', manager: 'Gerente', editor: 'Editor', viewer: 'Visualizador',
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Grupos Familiares</h1>
-
-      <Card className="animate-fade-in">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users size={18} /> {group.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            {members.map((m: any) => (
-              <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                    {m.name?.split(' ').map((n: string) => n[0]).join('') || '?'}
-                  </div>
-                  <span className="text-sm font-medium">{m.name}</span>
-                </div>
-                <Badge variant="secondary" className={roleColors[m.role] || ''}>
-                  {{ owner: 'Dono', manager: 'Gerente', editor: 'Editor', viewer: 'Visualizador' }[m.role as string] || m.role}
-                </Badge>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Grupos Familiares</h1>
+        <div className="flex gap-2">
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1"><Plus size={14} /> Criar</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Criar Novo Grupo</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nome do grupo</Label><Input value={groupName} onChange={e => setGroupName(e.target.value)} placeholder="Ex: Família Silva" /></div>
+                <Button onClick={createGroup} disabled={saving || !groupName} className="w-full">
+                  {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null} Criar Grupo
+                </Button>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1"><LogIn size={14} /> Entrar</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Entrar em um Grupo</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Código de convite</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Ex: ABC123" className="uppercase" /></div>
+                <Button onClick={joinGroup} disabled={saving || !inviteCode} className="w-full">
+                  {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null} Entrar no Grupo
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
-      <Card className="animate-fade-in">
-        <CardHeader><CardTitle className="text-base">Convidar Membro</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted">
-            <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => { navigator.clipboard.writeText(group.invite_code); toast.info('Código copiado!'); }}
-            >
-              <Copy size={14} className="mr-1" /> Copiar
-            </Button>
+      {groups.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+          <Users size={48} className="text-muted-foreground" />
+          <div>
+            <h2 className="text-lg font-semibold">Nenhum grupo</h2>
+            <p className="text-sm text-muted-foreground">Crie ou entre em um grupo familiar para compartilhar finanças</p>
           </div>
-          <div className="flex items-center justify-center py-6 border rounded-lg border-dashed">
-            <div className="text-center text-muted-foreground">
-              <QrCode size={64} className="mx-auto mb-2 opacity-30" />
-              <p className="text-xs">QR Code do convite</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {groups.map((group: any) => {
+        const members = group.group_members || [];
+        const isOwner = group.owner_id === user?.id;
+
+        return (
+          <Card key={group.id} className="animate-fade-in">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users size={18} /> {group.name}
+                </CardTitle>
+                {isOwner && (
+                  <button onClick={() => deleteGroup(group.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Excluir grupo">
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                {members.map((m: any) => (
+                  <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+                        {m.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '?'}
+                      </div>
+                      <span className="text-sm font-medium">{m.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className={roleColors[m.role] || ''}>
+                        {roleLabels[m.role] || m.role}
+                      </Badge>
+                      {isOwner && m.user_id !== user?.id && (
+                        <button onClick={() => removeMember(m.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {isOwner && (
+                <div className="p-4 rounded-lg bg-muted">
+                  <p className="text-xs text-muted-foreground mb-2">Código de convite</p>
+                  <div className="flex items-center gap-3">
+                    <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
+                    <Button
+                      variant="outline" size="sm"
+                      onClick={() => { navigator.clipboard.writeText(group.invite_code); toast.info('Código copiado!'); }}
+                    >
+                      <Copy size={14} className="mr-1" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
