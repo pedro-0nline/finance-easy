@@ -25,6 +25,7 @@ export default function GroupsPage() {
   const [groupName, setGroupName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [saving, setSaving] = useState(false);
+  const [qrGroupId, setQrGroupId] = useState<string | null>(null);
 
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
