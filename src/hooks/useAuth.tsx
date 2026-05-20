@@ -68,6 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         scopes: 'https://www.googleapis.com/auth/calendar.readonly',
         redirectTo: window.location.origin,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
   };
