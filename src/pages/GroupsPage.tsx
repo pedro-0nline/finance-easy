@@ -50,15 +50,13 @@ export default function GroupsPage() {
   const joinGroup = async () => {
     if (!inviteCode || !user) return;
     setSaving(true);
-    const { data: found, error: findErr } = await supabase
-      .from('groups').select('id').eq('invite_code', inviteCode.toUpperCase()).maybeSingle();
-    if (findErr || !found) { toast.error('Código inválido'); setSaving(false); return; }
-    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
-    const { error } = await supabase.from('group_members').insert([{
-      group_id: found.id, user_id: user.id, role: 'viewer' as const, name: displayName,
-    }]);
+    const { error } = await supabase.rpc('join_group_by_code', {
+      _invite_code: inviteCode.toUpperCase(),
+    });
     if (error) {
-      if (error.code === '23505') toast.error('Você já faz parte deste grupo');
+      const msg = error.message || '';
+      if (msg.includes('Already a member')) toast.error('Você já faz parte deste grupo');
+      else if (msg.includes('Invalid invite code')) toast.error('Código inválido');
       else toast.error('Erro ao entrar no grupo');
       setSaving(false); return;
     }
