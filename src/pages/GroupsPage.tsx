@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/useSupabaseData';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function GroupsPage() {
   const { user } = useAuth();
