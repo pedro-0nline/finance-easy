@@ -6,6 +6,7 @@ import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { useTransactions } from '@/hooks/useSupabaseData';
 import { useGoogleCalendarEvents, useIsGoogleConnected } from '@/hooks/useGoogleCalendar';
+import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Loader2, CalendarDays } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -14,6 +15,7 @@ export default function CalendarPage() {
   const { data: transactions = [], isLoading } = useTransactions();
   const { allCategories } = useAllCategories();
   const { isConnected: googleConnected } = useIsGoogleConnected();
+  const { signInWithGoogle } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
