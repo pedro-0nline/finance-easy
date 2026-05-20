@@ -6,6 +6,7 @@ import { useAllCategories } from '@/hooks/useCategories';
 import { AmountBadge } from '@/components/AmountBadge';
 import { useTransactions } from '@/hooks/useSupabaseData';
 import { useGoogleCalendarEvents, useIsGoogleConnected } from '@/hooks/useGoogleCalendar';
+import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Loader2, CalendarDays } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -14,13 +15,14 @@ export default function CalendarPage() {
   const { data: transactions = [], isLoading } = useTransactions();
   const { allCategories } = useAllCategories();
   const { isConnected: googleConnected } = useIsGoogleConnected();
+  const { signInWithGoogle } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const start = startOfMonth(currentMonth);
   const end = endOfMonth(currentMonth);
 
-  const { data: googleEvents = [] } = useGoogleCalendarEvents(
+  const { data: googleEvents = [], error: googleError } = useGoogleCalendarEvents(
     format(start, 'yyyy-MM-dd'),
     format(end, 'yyyy-MM-dd')
   );
@@ -66,13 +68,23 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex gap-4 text-xs">
-        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-success" /> Entrada</span>
-        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-destructive" /> Saída</span>
-        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-warning" /> Vencimento</span>
-        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" /> Parcela</span>
-        {googleConnected && <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Google</span>}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-4 text-xs">
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-success" /> Entrada</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-destructive" /> Saída</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-warning" /> Vencimento</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" /> Parcela</span>
+          {googleConnected && <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Google</span>}
+        </div>
+        {(!googleConnected || googleError) && (
+          <Button size="sm" variant="outline" onClick={signInWithGoogle} className="gap-1">
+            <CalendarDays size={14} /> {googleError ? 'Reconectar Google' : 'Conectar Google Agenda'}
+          </Button>
+        )}
       </div>
+      {googleError && (
+        <p className="text-xs text-destructive">Sessão do Google expirou. Reconecte para ver seus eventos.</p>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">

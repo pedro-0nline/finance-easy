@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/useSupabaseData';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function GroupsPage() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ export default function GroupsPage() {
   const [groupName, setGroupName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [saving, setSaving] = useState(false);
+  const [qrGroupId, setQrGroupId] = useState<string | null>(null);
 
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
@@ -184,9 +186,9 @@ export default function GroupsPage() {
               </div>
 
               {isOwner && (
-                <div className="p-4 rounded-lg bg-muted">
-                  <p className="text-xs text-muted-foreground mb-2">Código de convite</p>
-                  <div className="flex items-center gap-3">
+                <div className="p-4 rounded-lg bg-muted space-y-3">
+                  <p className="text-xs text-muted-foreground">Código de convite</p>
+                  <div className="flex items-center gap-2">
                     <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
                     <Button
                       variant="outline" size="sm"
@@ -194,7 +196,27 @@ export default function GroupsPage() {
                     >
                       <Copy size={14} className="mr-1" /> Copiar
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => setQrGroupId(group.id)}>
+                      <QrCode size={14} className="mr-1" /> QR
+                    </Button>
                   </div>
+                  {qrGroupId === group.id && (
+                    <div className="flex flex-col items-center gap-2 pt-2">
+                      <div className="bg-white p-3 rounded-lg">
+                        <QRCodeSVG
+                          value={`${window.location.origin}/groups?code=${group.invite_code}`}
+                          size={180}
+                          level="M"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Escaneie para entrar no grupo
+                      </p>
+                      <Button variant="ghost" size="sm" onClick={() => setQrGroupId(null)}>
+                        Ocultar QR
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
