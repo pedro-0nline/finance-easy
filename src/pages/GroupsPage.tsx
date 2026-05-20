@@ -186,9 +186,9 @@ export default function GroupsPage() {
               </div>
 
               {isOwner && (
-                <div className="p-4 rounded-lg bg-muted">
-                  <p className="text-xs text-muted-foreground mb-2">Código de convite</p>
-                  <div className="flex items-center gap-3">
+                <div className="p-4 rounded-lg bg-muted space-y-3">
+                  <p className="text-xs text-muted-foreground">Código de convite</p>
+                  <div className="flex items-center gap-2">
                     <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
                     <Button
                       variant="outline" size="sm"
@@ -196,13 +196,36 @@ export default function GroupsPage() {
                     >
                       <Copy size={14} className="mr-1" /> Copiar
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => setQrGroupId(group.id)}>
+                      <QrCode size={14} className="mr-1" /> QR
+                    </Button>
                   </div>
+                  {qrGroupId === group.id && (
+                    <div className="flex flex-col items-center gap-2 pt-2">
+                      <div className="bg-white p-3 rounded-lg">
+                        <QRCodeSVG
+                          value={`${window.location.origin}/groups?code=${group.invite_code}`}
+                          size={180}
+                          level="M"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Escaneie para entrar no grupo
+                      </p>
+                      <Button variant="ghost" size="sm" onClick={() => setQrGroupId(null)}>
+                        Ocultar QR
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
           </Card>
         );
       })}
+    </div>
+  );
+}
     </div>
   );
 }
