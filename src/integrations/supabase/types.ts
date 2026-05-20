@@ -394,6 +394,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      join_group_by_code: { Args: { _invite_code: string }; Returns: string }
     }
     Enums: {
       account_type: "checking" | "savings" | "investment"
