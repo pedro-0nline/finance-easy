@@ -22,7 +22,7 @@ export default function CalendarPage() {
   const start = startOfMonth(currentMonth);
   const end = endOfMonth(currentMonth);
 
-  const { data: googleEvents = [] } = useGoogleCalendarEvents(
+  const { data: googleEvents = [], error: googleError } = useGoogleCalendarEvents(
     format(start, 'yyyy-MM-dd'),
     format(end, 'yyyy-MM-dd')
   );
