@@ -46,7 +46,6 @@ export function useGoogleCalendarEvents(timeMin: string, timeMax: string) {
 }
 
 export function useIsGoogleConnected() {
-  const { providerToken, user } = useAuth();
-  const isGoogle = user?.app_metadata?.provider === 'google';
-  return { isConnected: isGoogle && !!providerToken, providerToken };
+  const { providerToken } = useAuth();
+  return { isConnected: !!providerToken, providerToken };
 }
