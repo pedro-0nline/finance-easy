@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useGroups } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import { Users, Copy, QrCode, Loader2, Plus, LogIn, Trash2 } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function GroupsPage() {
   const { data: profile } = useProfile();
   const qc = useQueryClient();
   const { data: groups = [], isLoading } = useGroups();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -27,22 +29,36 @@ export default function GroupsPage() {
   const [saving, setSaving] = useState(false);
   const [qrGroupId, setQrGroupId] = useState<string | null>(null);
 
+  // Auto-fill invite code from QR/shared link (?code=ABC123)
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      setInviteCode(code.toUpperCase());
+      setJoinOpen(true);
+      searchParams.delete('code');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const createGroup = async () => {
     if (!groupName || !user) return;
     setSaving(true);
     const code = generateCode();
-    const { data, error } = await supabase.from('groups').insert([{
-      name: groupName, owner_id: user.id, invite_code: code,
-    }]).select().single();
-    if (error) { toast.error('Erro ao criar grupo'); setSaving(false); return; }
-    // Add owner as member
-    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
-    await supabase.from('group_members').insert([{
-      group_id: data.id, user_id: user.id, role: 'owner' as const, name: displayName,
+    const newId = crypto.randomUUID();
+    const { error: gErr } = await supabase.from('groups').insert([{
+      id: newId, name: groupName, owner_id: user.id, invite_code: code,
     }]);
-    toast.success('Grupo criado!');
+    if (gErr) { toast.error('Erro ao criar grupo'); setSaving(false); return; }
+    // Add owner as member (passes "Group owners can manage members" policy)
+    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
+    const { error: mErr } = await supabase.from('group_members').insert([{
+      group_id: newId, user_id: user.id, role: 'owner' as const, name: displayName,
+    }]);
+    if (mErr) { toast.error('Grupo criado, mas falha ao adicionar você como membro'); }
+    else toast.success('Grupo criado!');
     qc.invalidateQueries({ queryKey: ['groups'] });
     setGroupName('');
     setCreateOpen(false);
@@ -107,7 +123,10 @@ export default function GroupsPage() {
               <Button size="sm" className="gap-1"><Plus size={14} /> Criar</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Criar Novo Grupo</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Grupo</DialogTitle>
+                <DialogDescription>Crie um grupo familiar para compartilhar finanças.</DialogDescription>
+              </DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nome do grupo</Label><Input value={groupName} onChange={e => setGroupName(e.target.value)} placeholder="Ex: Família Silva" /></div>
                 <Button onClick={createGroup} disabled={saving || !groupName} className="w-full">
@@ -121,7 +140,10 @@ export default function GroupsPage() {
               <Button size="sm" variant="outline" className="gap-1"><LogIn size={14} /> Entrar</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Entrar em um Grupo</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Entrar em um Grupo</DialogTitle>
+                <DialogDescription>Use o código de convite recebido para entrar.</DialogDescription>
+              </DialogHeader>
               <div className="space-y-4">
                 <div><Label>Código de convite</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Ex: ABC123" className="uppercase" /></div>
                 <Button onClick={joinGroup} disabled={saving || !inviteCode} className="w-full">
@@ -204,7 +226,7 @@ export default function GroupsPage() {
                     <div className="flex flex-col items-center gap-2 pt-2">
                       <div className="bg-white p-3 rounded-lg">
                         <QRCodeSVG
-                          value={`${window.location.origin}/groups?code=${group.invite_code}`}
+                          value={`${window.location.origin}/app/groups?code=${group.invite_code}`}
                           size={180}
                           level="M"
                         />
