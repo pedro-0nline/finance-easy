@@ -220,7 +220,7 @@ export default function GroupsPage() {
                     <div className="flex flex-col items-center gap-2 pt-2">
                       <div className="bg-white p-3 rounded-lg">
                         <QRCodeSVG
-                          value={`${window.location.origin}/groups?code=${group.invite_code}`}
+                          value={`${window.location.origin}/app/groups?code=${group.invite_code}`}
                           size={180}
                           level="M"
                         />
