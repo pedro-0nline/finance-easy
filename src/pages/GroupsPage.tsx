@@ -29,6 +29,7 @@ export default function GroupsPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [qrGroupId, setQrGroupId] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   // Auto-fill invite code from QR/shared link (?code=ABC123)
   useEffect(() => {
