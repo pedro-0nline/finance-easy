@@ -123,7 +123,10 @@ export default function GroupsPage() {
               <Button size="sm" className="gap-1"><Plus size={14} /> Criar</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Criar Novo Grupo</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Grupo</DialogTitle>
+                <DialogDescription>Crie um grupo familiar para compartilhar finanças.</DialogDescription>
+              </DialogHeader>
               <div className="space-y-4">
                 <div><Label>Nome do grupo</Label><Input value={groupName} onChange={e => setGroupName(e.target.value)} placeholder="Ex: Família Silva" /></div>
                 <Button onClick={createGroup} disabled={saving || !groupName} className="w-full">
@@ -137,7 +140,10 @@ export default function GroupsPage() {
               <Button size="sm" variant="outline" className="gap-1"><LogIn size={14} /> Entrar</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Entrar em um Grupo</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Entrar em um Grupo</DialogTitle>
+                <DialogDescription>Use o código de convite recebido para entrar.</DialogDescription>
+              </DialogHeader>
               <div className="space-y-4">
                 <div><Label>Código de convite</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Ex: ABC123" className="uppercase" /></div>
                 <Button onClick={joinGroup} disabled={saving || !inviteCode} className="w-full">
