@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/useSupabaseData';
 import { QRCodeSVG } from 'qrcode.react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 export default function GroupsPage() {
   const { user } = useAuth();
