@@ -148,6 +148,28 @@ export default function GroupsPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div><Label>Código de convite</Label><Input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Ex: ABC123" className="uppercase" /></div>
+                <Button type="button" variant="outline" className="w-full gap-1" onClick={() => setScanning(s => !s)}>
+                  <QrCode size={14} /> {scanning ? 'Fechar câmera' : 'Escanear QR Code'}
+                </Button>
+                {scanning && (
+                  <div className="rounded-lg overflow-hidden border">
+                    <Scanner
+                      onScan={(results) => {
+                        const raw = results?.[0]?.rawValue;
+                        if (!raw) return;
+                        try {
+                          const url = new URL(raw);
+                          const code = url.searchParams.get('code');
+                          if (code) { setInviteCode(code.toUpperCase()); setScanning(false); return; }
+                        } catch { /* not a URL */ }
+                        setInviteCode(raw.toUpperCase());
+                        setScanning(false);
+                      }}
+                      onError={() => toast.error('Não foi possível acessar a câmera')}
+                      constraints={{ facingMode: 'environment' }}
+                    />
+                  </div>
+                )}
                 <Button onClick={joinGroup} disabled={saving || !inviteCode} className="w-full">
                   {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null} Entrar no Grupo
                 </Button>
