@@ -47,16 +47,18 @@ export default function GroupsPage() {
     if (!groupName || !user) return;
     setSaving(true);
     const code = generateCode();
-    const { data, error } = await supabase.from('groups').insert([{
-      name: groupName, owner_id: user.id, invite_code: code,
-    }]).select().single();
-    if (error) { toast.error('Erro ao criar grupo'); setSaving(false); return; }
-    // Add owner as member
-    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
-    await supabase.from('group_members').insert([{
-      group_id: data.id, user_id: user.id, role: 'owner' as const, name: displayName,
+    const newId = crypto.randomUUID();
+    const { error: gErr } = await supabase.from('groups').insert([{
+      id: newId, name: groupName, owner_id: user.id, invite_code: code,
     }]);
-    toast.success('Grupo criado!');
+    if (gErr) { toast.error('Erro ao criar grupo'); setSaving(false); return; }
+    // Add owner as member (passes "Group owners can manage members" policy)
+    const displayName = profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || '';
+    const { error: mErr } = await supabase.from('group_members').insert([{
+      group_id: newId, user_id: user.id, role: 'owner' as const, name: displayName,
+    }]);
+    if (mErr) { toast.error('Grupo criado, mas falha ao adicionar você como membro'); }
+    else toast.success('Grupo criado!');
     qc.invalidateQueries({ queryKey: ['groups'] });
     setGroupName('');
     setCreateOpen(false);
