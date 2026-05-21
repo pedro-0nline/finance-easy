@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useGroups } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import { Users, Copy, QrCode, Loader2, Plus, LogIn, Trash2 } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function GroupsPage() {
   const { data: profile } = useProfile();
   const qc = useQueryClient();
   const { data: groups = [], isLoading } = useGroups();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -26,6 +28,18 @@ export default function GroupsPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [qrGroupId, setQrGroupId] = useState<string | null>(null);
+
+  // Auto-fill invite code from QR/shared link (?code=ABC123)
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      setInviteCode(code.toUpperCase());
+      setJoinOpen(true);
+      searchParams.delete('code');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
