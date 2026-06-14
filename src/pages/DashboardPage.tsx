@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -11,6 +11,7 @@ import { AmountBadge } from '@/components/AmountBadge';
 import { InstallmentBadge } from '@/components/Badges';
 import { ProgressBar } from '@/components/ProgressBar';
 import { useTransactions, useBankAccounts, useCreditCards, useBudgets } from '@/hooks/useSupabaseData';
+import { useCoupleGroup, useCoupleOverview } from '@/hooks/useGroupFinance';
 
 import { format, parseISO, isAfter, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -19,33 +20,50 @@ import type { Category } from '@/types';
 const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
 export default function DashboardPage() {
+  const [viewMode, setViewMode] = useState<'individual' | 'conjunto'>('individual');
   const { data: transactions = [], isLoading: tLoading } = useTransactions();
   const { data: bankAccounts = [], isLoading: bLoading } = useBankAccounts();
   const { data: creditCards = [] } = useCreditCards();
   const { data: budgets = [] } = useBudgets();
+  const { data: coupleGroup } = useCoupleGroup();
+  const { data: coupleOverview } = useCoupleOverview(coupleGroup?.id);
   const { allCategories } = useAllCategories();
 
-  const totalBalance = bankAccounts.reduce((s, a) => s + Number(a.balance), 0);
+  const totalBalance =
+    viewMode === 'conjunto' && coupleOverview
+      ? coupleOverview.combined.balance
+      : bankAccounts.reduce((s, a) => s + Number(a.balance), 0);
   const now = new Date();
   const currentMonth = format(now, 'yyyy-MM');
 
-  const monthTxns = transactions.filter((t) => t.date.startsWith(currentMonth));
-  const income = monthTxns.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-  const expenses = monthTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const txBase =
+    viewMode === 'conjunto' && coupleOverview?.memberIds?.length
+      ? transactions.filter((t) => coupleOverview.memberIds.includes(t.user_id))
+      : transactions;
+
+  const monthTxns = txBase.filter((t) => t.date.startsWith(currentMonth));
+  const income =
+    viewMode === 'conjunto' && coupleOverview
+      ? coupleOverview.combined.income
+      : monthTxns.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const expenses =
+    viewMode === 'conjunto' && coupleOverview
+      ? coupleOverview.combined.expenses
+      : monthTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + Number(t.amount), 0);
   const net = income - expenses;
 
-  const upcoming = transactions
+  const upcoming = txBase
     .filter((t) => !t.is_paid && isAfter(parseISO(t.date), now))
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 5);
 
-  const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
+  const recent = [...txBase].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
 
   const weeklyData = useMemo(() => {
     return Array.from({ length: 8 }, (_, i) => {
       const weekStart = startOfWeek(subWeeks(now, 7 - i));
       const weekEnd = endOfWeek(subWeeks(now, 7 - i));
-      const weekTxns = transactions.filter((t) => {
+      const weekTxns = txBase.filter((t) => {
         const d = parseISO(t.date);
         return d >= weekStart && d <= weekEnd;
       });
@@ -55,7 +73,7 @@ export default function DashboardPage() {
         saidas: weekTxns.filter((t) => t.type !== 'income').reduce((s, t) => s + Number(t.amount), 0),
       };
     });
-  }, [transactions]);
+  }, [txBase, now]);
 
   const categorySpending = useMemo(() => {
     const map: Record<string, number> = {};
@@ -92,7 +110,27 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        {coupleGroup && (
+          <div className="flex rounded-lg border border-border p-1">
+            <Button
+              size="sm"
+              variant={viewMode === 'individual' ? 'default' : 'ghost'}
+              onClick={() => setViewMode('individual')}
+            >
+              Individual
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'conjunto' ? 'default' : 'ghost'}
+              onClick={() => setViewMode('conjunto')}
+            >
+              Conjunto
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard title="Saldo Total" value={fmt(totalBalance)} trend={5.2} icon={Wallet} iconColor="#6366F1" />
