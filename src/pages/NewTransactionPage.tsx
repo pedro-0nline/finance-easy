@@ -1,4 +1,4 @@
-import { useState } from 'react';
+ï»¿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -219,8 +219,10 @@ export default function NewTransactionPage() {
                 <p className="text-xs text-muted-foreground mb-2">Preview da transacao:</p>
                 <p className="font-medium">{description}</p>
                 <p className="text-sm text-muted-foreground">
-                  {isInstallment ? `${installments}x de R$ ${perInstallment.toFixed(2)}` : `R$ ${amountNum.toFixed(2)}`}
-                  {' · '}
+                  {isInstallment
+                    ? `${installments}x de R$ ${perInstallment.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : `R$ ${amountNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {' - '}
                   {allCategories[category]?.label ?? category}
                 </p>
               </CardContent>
