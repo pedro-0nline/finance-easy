@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { Database } from '@/integrations/supabase/types';
+
+const VALID_TRANSACTION_TYPES: Database['public']['Enums']['transaction_type'][] = ['income', 'expense', 'recurring', 'fixed'];
+const VALID_PAYMENT_METHODS: Database['public']['Enums']['payment_method'][] = ['cash', 'credit_card', 'debit_card', 'pix', 'transfer', 'boleto'];
+const VALID_CATEGORIES: Database['public']['Enums']['category'][] = ['food', 'health', 'transport', 'education', 'leisure', 'housing', 'utilities', 'other'];
 
 // ─── Transactions ────────────────────────────────────────────
 export function useTransactions() {
@@ -30,7 +35,51 @@ export function useAddTransaction() {
       installment_group_id?: string; is_shared: boolean;
       shared_with?: any; is_paid: boolean; notes?: string;
     }) => {
-      const { error } = await supabase.from('transactions').insert([{ ...t, user_id: user!.id } as any]);
+      if (!user?.id) {
+        throw new Error('Usuario nao autenticado.');
+      }
+
+      const normalizedType: Database['public']['Enums']['transaction_type'] =
+        VALID_TRANSACTION_TYPES.includes(t.type as Database['public']['Enums']['transaction_type'])
+          ? (t.type as Database['public']['Enums']['transaction_type'])
+          : 'expense';
+
+      const normalizedPaymentMethod: Database['public']['Enums']['payment_method'] =
+        VALID_PAYMENT_METHODS.includes(t.payment_method as Database['public']['Enums']['payment_method'])
+          ? (t.payment_method as Database['public']['Enums']['payment_method'])
+          : 'pix';
+
+      const normalizedCategory: Database['public']['Enums']['category'] =
+        VALID_CATEGORIES.includes(t.category as Database['public']['Enums']['category'])
+          ? (t.category as Database['public']['Enums']['category'])
+          : 'other';
+
+      const normalizedAmount = Number(t.amount);
+      if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+        throw new Error('Valor invalido para a transacao.');
+      }
+
+      const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : new Date().toISOString().slice(0, 10);
+
+      const payload: Database['public']['Tables']['transactions']['Insert'] = {
+        user_id: user.id,
+        type: normalizedType,
+        category: normalizedCategory,
+        description: t.description?.trim() || '',
+        amount: normalizedAmount,
+        payment_method: normalizedPaymentMethod,
+        date: normalizedDate,
+        is_installment: !!t.is_installment,
+        installment_number: t.installment_number ?? null,
+        total_installments: t.total_installments ?? null,
+        installment_group_id: t.installment_group_id ?? null,
+        is_shared: !!t.is_shared,
+        shared_with: t.shared_with ?? [],
+        is_paid: !!t.is_paid,
+        notes: t.notes?.trim() || null,
+      };
+
+      const { error } = await supabase.from('transactions').insert([payload]);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),

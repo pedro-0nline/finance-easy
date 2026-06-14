@@ -7,6 +7,7 @@ interface AuthContext {
   session: Session | null;
   loading: boolean;
   providerToken: string | null;
+  clearGoogleToken: () => void;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<void>;
@@ -21,6 +22,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [providerToken, setProviderToken] = useState<string | null>(null);
 
+  const clearGoogleToken = () => {
+    localStorage.removeItem('google_provider_token');
+    setProviderToken(null);
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -28,6 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.provider_token) {
         setProviderToken(session.provider_token);
         localStorage.setItem('google_provider_token', session.provider_token);
+      } else if (_event === 'SIGNED_OUT') {
+        clearGoogleToken();
       }
       setLoading(false);
     });
@@ -63,11 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    clearGoogleToken();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         scopes: 'https://www.googleapis.com/auth/calendar.readonly',
-        redirectTo: 'https://finance.pedropaulocf.com.br/auth/callback',
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -77,13 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    localStorage.removeItem('google_provider_token');
-    setProviderToken(null);
+    clearGoogleToken();
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthCtx.Provider value={{ user, session, loading, providerToken, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthCtx.Provider value={{ user, session, loading, providerToken, clearGoogleToken, signUp, signIn, signInWithGoogle, signOut }}>
       {children}
     </AuthCtx.Provider>
   );

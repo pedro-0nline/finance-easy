@@ -23,6 +23,9 @@ export default function AuthCallbackPage() {
 
       const { data } = await supabase.auth.getSession();
       if (data.session) {
+        if (data.session.provider_token) {
+          localStorage.setItem('google_provider_token', data.session.provider_token);
+        }
         navigate('/app', { replace: true });
       } else {
         navigate('/login', { replace: true });

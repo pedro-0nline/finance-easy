@@ -10,7 +10,7 @@ export interface GoogleCalendarEvent {
 }
 
 export function useGoogleCalendarEvents(timeMin: string, timeMax: string) {
-  const { providerToken } = useAuth();
+  const { providerToken, clearGoogleToken } = useAuth();
 
   return useQuery({
     queryKey: ['google-calendar', timeMin, timeMax, providerToken],
@@ -30,9 +30,16 @@ export function useGoogleCalendarEvents(timeMin: string, timeMax: string) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          localStorage.removeItem('google_provider_token');
-          throw new Error('Token expirado. Faça login novamente com Google.');
+          clearGoogleToken();
+          throw new Error('Token expirado. Faca login novamente com Google.');
         }
+
+        // Access denied for calendar scope should not break transaction flows.
+        if (res.status === 403) {
+          clearGoogleToken();
+          return [];
+        }
+
         throw new Error('Falha ao buscar eventos do Google Calendar');
       }
 
