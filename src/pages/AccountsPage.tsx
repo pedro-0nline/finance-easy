@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useBankAccounts, useCreditCards } from '@/hooks/useSupabaseData';
+import { useAddTransaction, useBankAccounts, useCreditCards } from '@/hooks/useSupabaseData';
 import { ProgressBar } from '@/components/ProgressBar';
 import { CreditCard as CreditCardIcon, Building2, Loader2, Plus, Trash2 } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const sparklineData = Array.from({ length: 7 }, (_, i) => ({ v: 3000 + Math.random() * 2000 - 1000 * Math.sin(i) }));
@@ -24,10 +25,19 @@ export default function AccountsPage() {
   const qc = useQueryClient();
   const { data: bankAccounts = [], isLoading: bLoading } = useBankAccounts();
   const { data: creditCards = [], isLoading: cLoading } = useCreditCards();
+  const addTransaction = useAddTransaction();
 
   const [accOpen, setAccOpen] = useState(false);
   const [ccOpen, setCcOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [payOpenCardId, setPayOpenCardId] = useState<string | null>(null);
+  const [payAmount, setPayAmount] = useState('');
+  const [payDate, setPayDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [payFromAccountId, setPayFromAccountId] = useState<string>('none');
+  const [paying, setPaying] = useState(false);
+  const [adjustOpenCardId, setAdjustOpenCardId] = useState<string | null>(null);
+  const [adjustUsed, setAdjustUsed] = useState('');
+  const [adjusting, setAdjusting] = useState(false);
 
   // Bank account form
   const [accName, setAccName] = useState('');
@@ -46,6 +56,14 @@ export default function AccountsPage() {
 
   const resetAccForm = () => { setAccName(''); setAccInst(''); setAccType('checking'); setAccBalance(''); setAccColor(COLORS[0]); };
   const resetCcForm = () => { setCcName(''); setCcInst(''); setCcLimit(''); setCcDue('10'); setCcClosing('3'); setCcColor(COLORS[0]); };
+  const resetPayForm = () => {
+    setPayAmount('');
+    setPayDate(format(new Date(), 'yyyy-MM-dd'));
+    setPayFromAccountId('none');
+  };
+  const resetAdjustForm = () => {
+    setAdjustUsed('');
+  };
 
   const addAccount = async () => {
     if (!accName || !user) return;
@@ -92,6 +110,98 @@ export default function AccountsPage() {
     qc.invalidateQueries({ queryKey: ['credit_cards'] });
   };
 
+  const selectedPayCard = creditCards.find((cc) => cc.id === payOpenCardId) || null;
+  const selectedAdjustCard = creditCards.find((cc) => cc.id === adjustOpenCardId) || null;
+
+  const payCardInvoice = async () => {
+    if (!user?.id || !selectedPayCard) return;
+
+    const parsedAmount = Number.parseFloat(payAmount.replace(',', '.'));
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      toast.error('Informe um valor válido para pagamento.');
+      return;
+    }
+
+    const paymentDate = /^\d{4}-\d{2}-\d{2}$/.test(payDate) ? payDate : format(new Date(), 'yyyy-MM-dd');
+    const sourceAccount = bankAccounts.find((a) => a.id === payFromAccountId);
+    const notes = sourceAccount
+      ? `Pagamento de fatura a partir da conta ${sourceAccount.name}.`
+      : 'Pagamento de fatura sem conta de origem informada.';
+
+    setPaying(true);
+    try {
+      await addTransaction.mutateAsync({
+        type: 'expense',
+        category: 'other',
+        description: `Pagamento fatura - ${selectedPayCard.name}`,
+        amount: parsedAmount,
+        payment_method: 'transfer',
+        date: paymentDate,
+        is_installment: false,
+        is_shared: false,
+        is_paid: true,
+        notes,
+      });
+
+      const nextUsed = Math.max(0, Number(selectedPayCard.used) - parsedAmount);
+      const { error: cardErr } = await supabase
+        .from('credit_cards')
+        .update({ used: nextUsed })
+        .eq('id', selectedPayCard.id)
+        .eq('user_id', user.id);
+
+      if (cardErr) throw cardErr;
+
+      if (sourceAccount) {
+        const nextBalance = Number(sourceAccount.balance) - parsedAmount;
+        const { error: accErr } = await supabase
+          .from('bank_accounts')
+          .update({ balance: nextBalance })
+          .eq('id', sourceAccount.id)
+          .eq('user_id', user.id);
+        if (accErr) throw accErr;
+      }
+
+      toast.success('Fatura registrada e saída lançada com sucesso.');
+      qc.invalidateQueries({ queryKey: ['credit_cards'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['bank_accounts'] });
+      setPayOpenCardId(null);
+      resetPayForm();
+    } catch (error: any) {
+      toast.error(error?.message || 'Não foi possível registrar o pagamento da fatura.');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const adjustCardUsed = async () => {
+    if (!user?.id || !selectedAdjustCard) return;
+    const parsed = Number.parseFloat(adjustUsed.replace(',', '.'));
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      toast.error('Informe um valor de utilizado valido (>= 0).');
+      return;
+    }
+
+    setAdjusting(true);
+    try {
+      const { error } = await supabase
+        .from('credit_cards')
+        .update({ used: parsed })
+        .eq('id', selectedAdjustCard.id)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      toast.success('Valor utilizado do cartao atualizado.');
+      qc.invalidateQueries({ queryKey: ['credit_cards'] });
+      setAdjustOpenCardId(null);
+      resetAdjustForm();
+    } catch (error: any) {
+      toast.error(error?.message || 'Nao foi possivel atualizar o utilizado.');
+    } finally {
+      setAdjusting(false);
+    }
+  };
+
   if (bLoading || cLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={32} /></div>;
   }
@@ -102,7 +212,7 @@ export default function AccountsPage() {
 
       {/* Bank Accounts */}
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <h2 className="text-lg font-semibold">Contas Bancárias</h2>
           <Dialog open={accOpen} onOpenChange={setAccOpen}>
             <DialogTrigger asChild>
@@ -171,7 +281,7 @@ export default function AccountsPage() {
 
       {/* Credit Cards */}
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <h2 className="text-lg font-semibold">Cartões de Crédito</h2>
           <Dialog open={ccOpen} onOpenChange={setCcOpen}>
             <DialogTrigger asChild>
@@ -223,6 +333,30 @@ export default function AccountsPage() {
                   </div>
                   <ProgressBar value={Number(cc.used)} max={Number(cc.credit_limit)} showAlert />
                   <p className="text-xs text-muted-foreground">{pct}% do limite utilizado</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setPayOpenCardId(cc.id);
+                      setPayAmount(Number(cc.used).toFixed(2));
+                      setPayDate(format(new Date(), 'yyyy-MM-dd'));
+                      setPayFromAccountId(bankAccounts[0]?.id || 'none');
+                    }}
+                  >
+                    Pagar fatura
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => {
+                      setAdjustOpenCardId(cc.id);
+                      setAdjustUsed(Number(cc.used).toFixed(2));
+                    }}
+                  >
+                    Ajustar utilizado
+                  </Button>
                   {pct > 80 && <p className="text-xs text-destructive font-medium">⚠ Cartão próximo do limite!</p>}
                 </CardContent>
               </Card>
@@ -231,6 +365,101 @@ export default function AccountsPage() {
           {creditCards.length === 0 && <p className="text-muted-foreground">Nenhum cartão cadastrado</p>}
         </div>
       </div>
+
+      <Dialog
+        open={!!payOpenCardId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPayOpenCardId(null);
+            resetPayForm();
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pagar fatura {selectedPayCard ? `- ${selectedPayCard.name}` : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Valor pago</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+                placeholder="0.00"
+              />
+              {selectedPayCard && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Valor utilizado atual: {fmt(Number(selectedPayCard.used))}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label>Data do pagamento</Label>
+              <Input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
+            </div>
+
+            <div>
+              <Label>Conta de origem (opcional)</Label>
+              <Select value={payFromAccountId} onValueChange={setPayFromAccountId}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não informar</SelectItem>
+                  {bankAccounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button className="w-full" onClick={payCardInvoice} disabled={paying || addTransaction.isPending}>
+              {(paying || addTransaction.isPending) ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Confirmar pagamento
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!adjustOpenCardId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAdjustOpenCardId(null);
+            resetAdjustForm();
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajustar utilizado {selectedAdjustCard ? `- ${selectedAdjustCard.name}` : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Valor utilizado atual do cartao</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={adjustUsed}
+                onChange={(e) => setAdjustUsed(e.target.value)}
+                placeholder="0.00"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Use este ajuste para sincronizar o valor real ja utilizado no app.
+              </p>
+            </div>
+            <Button className="w-full" onClick={adjustCardUsed} disabled={adjusting}>
+              {adjusting ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Salvar valor utilizado
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -127,9 +127,9 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
           </div>
           <div className="space-y-1">
             {Object.entries(coupleOverview.byUser).map(([uid, data]) => (
-              <div key={uid} className="text-xs flex items-center justify-between border-b border-border/50 pb-1 last:border-0">
-                <span>{data.name || uid}</span>
-                <span>
+              <div key={uid} className="text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-border/50 pb-1 last:border-0">
+                <span className="font-medium">{data.name || uid}</span>
+                <span className="break-words">
                   Entradas <BRL value={data.income} /> | Saidas <BRL value={data.expenses} /> | Saldo <BRL value={data.net} />
                 </span>
               </div>
@@ -138,13 +138,13 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <p className="text-sm font-semibold">Rachar conta no grupo</p>
         <Dialog open={splitOpen} onOpenChange={setSplitOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1"><DollarSign size={14} /> Nova despesa compartilhada</Button>
+            <Button size="sm" className="gap-1 w-full sm:w-auto"><DollarSign size={14} /> Nova despesa compartilhada</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Criar racha de conta</DialogTitle>
               <DialogDescription>
@@ -210,7 +210,7 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
                 <p className="text-sm">Divisao igual: <strong><BRL value={splitPerPerson || 0} /></strong> por pessoa</p>
                 <p className="text-xs text-muted-foreground">Quanto cada um ja pagou:</p>
                 {members.map((m) => (
-                  <div key={m.user_id} className="grid grid-cols-[1fr_180px] gap-2 items-center">
+                  <div key={m.user_id} className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-2 items-center">
                     <span className="text-sm">{m.name}</span>
                     <Input
                       value={paidMap[m.user_id] || ''}
@@ -234,7 +234,7 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
         {sharedExpenses.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma despesa compartilhada ainda.</p>}
         {sharedExpenses.map((expense: any) => (
           <div key={expense.id} className="rounded-lg border border-border p-3 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold">{expense.title}</p>
                 <p className="text-xs text-muted-foreground">
@@ -249,13 +249,14 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
                 const delta = paid - shouldPay;
                 const canEdit = p.user_id === currentUserId;
                 return (
-                  <div key={p.id} className="grid grid-cols-[1fr_130px_130px_130px] gap-2 items-center text-xs">
-                    <span>{memberNameById[p.user_id] || p.user_id}</span>
-                    <span>Deveria: <BRL value={shouldPay} /></span>
-                    <span className={delta >= 0 ? 'text-green-500' : 'text-red-500'}>
-                      Saldo: <BRL value={delta} />
-                    </span>
-                    <div className="flex items-center gap-1">
+                  <div key={p.id} className="rounded-md border border-border/60 p-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-2 items-center text-xs">
+                      <span className="font-medium">{memberNameById[p.user_id] || p.user_id}</span>
+                      <span>Deveria: <BRL value={shouldPay} /></span>
+                      <span className={delta >= 0 ? 'text-green-500' : 'text-red-500'}>
+                        Saldo: <BRL value={delta} />
+                      </span>
+                      <div className="flex items-center gap-1 min-w-0">
                       <Input
                         defaultValue={paid.toString()}
                         onBlur={(e) => {
@@ -265,6 +266,7 @@ function GroupFinanceCard({ group, currentUserId }: { group: GroupRow; currentUs
                         }}
                         disabled={!canEdit || updateParticipantPaid.isPending}
                       />
+                      </div>
                     </div>
                   </div>
                 );
@@ -428,12 +430,12 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold">Grupos</h1>
-        <div className="flex gap-2">
+        <div className="flex w-full sm:w-auto gap-2">
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
+              <Button size="sm" className="gap-1 flex-1 sm:flex-none">
                 <Plus size={14} /> Criar
               </Button>
             </DialogTrigger>
@@ -469,7 +471,7 @@ export default function GroupsPage() {
 
           <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="gap-1">
+              <Button size="sm" variant="outline" className="gap-1 flex-1 sm:flex-none">
                 <LogIn size={14} /> Entrar
               </Button>
             </DialogTrigger>
@@ -538,13 +540,13 @@ export default function GroupsPage() {
         return (
           <Card key={group.id} className="animate-fade-in">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
+              <div className="flex items-start justify-between gap-2">
+                <CardTitle className="text-base flex items-center gap-2 min-w-0">
                   <Users size={18} /> {group.name}
-                  <Badge variant="secondary">{group.kind === 'couple' ? 'Casal' : 'Geral'}</Badge>
+                  <Badge variant="secondary" className="shrink-0">{group.kind === 'couple' ? 'Casal' : 'Geral'}</Badge>
                 </CardTitle>
                 {isOwner && (
-                  <button onClick={() => deleteGroup(group.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Excluir grupo">
+                  <button onClick={() => deleteGroup(group.id)} className="text-muted-foreground hover:text-destructive transition-colors shrink-0" title="Excluir grupo">
                     <Trash2 size={16} />
                   </button>
                 )}
@@ -554,12 +556,12 @@ export default function GroupsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 {members.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                    <div className="flex items-center gap-3">
+                  <div key={m.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-accent/50">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
                         {m.name?.split(' ').map((n) => n[0]).join('').slice(0, 2) || '?'}
                       </div>
-                      <span className="text-sm font-medium">{m.name}</span>
+                      <span className="text-sm font-medium truncate">{m.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className={roleColors[m.role] || ''}>
@@ -578,8 +580,8 @@ export default function GroupsPage() {
               {isOwner && (
                 <div className="p-4 rounded-lg bg-muted space-y-3">
                   <p className="text-xs text-muted-foreground">Codigo de convite</p>
-                  <div className="flex items-center gap-2">
-                    <code className="font-mono text-lg font-bold tracking-wider flex-1">{group.invite_code}</code>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <code className="font-mono text-lg font-bold tracking-wider flex-1 break-all">{group.invite_code}</code>
                     <Button
                       variant="outline"
                       size="sm"

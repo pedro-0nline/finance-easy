@@ -84,23 +84,25 @@ export default function InsightsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Sparkles size={24} className="text-primary" /> Insights
         </h1>
-        <Button onClick={handleAnalyze} disabled={analyzing}>
+        <Button onClick={handleAnalyze} disabled={analyzing} className="w-full sm:w-auto">
           {analyzing ? <><Loader2 size={16} className="mr-2 animate-spin" /> Analisando...</> : 'Analisar agora'}
         </Button>
       </div>
 
       <Tabs defaultValue="all">
-        <TabsList>
+        <div className="overflow-x-auto pb-1">
+        <TabsList className="w-max min-w-full">
           <TabsTrigger value="all">Todos</TabsTrigger>
           <TabsTrigger value="alert">Alertas</TabsTrigger>
           <TabsTrigger value="recommendation">Recomendações</TabsTrigger>
           <TabsTrigger value="analysis">Análises</TabsTrigger>
           <TabsTrigger value="opportunity">Oportunidades</TabsTrigger>
         </TabsList>
+        </div>
         <TabsContent value="all" className="mt-4">{renderInsights(insights)}</TabsContent>
         <TabsContent value="alert" className="mt-4">{renderInsights(insights.filter((i) => i.type === 'alert'))}</TabsContent>
         <TabsContent value="recommendation" className="mt-4">{renderInsights(insights.filter((i) => i.type === 'recommendation'))}</TabsContent>

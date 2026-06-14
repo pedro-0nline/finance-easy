@@ -7,13 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useAddTransaction } from '@/hooks/useSupabaseData';
+import { useAddTransaction, useCreditCards } from '@/hooks/useSupabaseData';
 import { useAllCategories } from '@/hooks/useCategories';
 import { paymentMethodLabels, categoryConfig } from '@/lib/categories';
 import { AddCategoryDialog } from '@/components/AddCategoryDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 function parseCurrency(value: string) {
   if (!value) return 0;
@@ -24,7 +27,10 @@ function parseCurrency(value: string) {
 
 export default function NewTransactionPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const addTransaction = useAddTransaction();
+  const { data: creditCards = [] } = useCreditCards();
   const { allCategories } = useAllCategories();
 
   const [step, setStep] = useState(1);
@@ -34,6 +40,7 @@ export default function NewTransactionPage() {
   const [category, setCategory] = useState('food');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [paymentMethod, setPaymentMethod] = useState('pix');
+  const [creditCardId, setCreditCardId] = useState('none');
   const [isInstallment, setIsInstallment] = useState(false);
   const [totalInstallments, setTotalInstallments] = useState('2');
   const [notes, setNotes] = useState('');
@@ -47,6 +54,10 @@ export default function NewTransactionPage() {
       toast.error('Preencha os campos obrigatorios com valores validos.');
       return;
     }
+    if (paymentMethod === 'credit_card' && creditCardId === 'none') {
+      toast.error('Selecione o cartao de credito usado na compra.');
+      return;
+    }
 
     try {
       const isBuiltinCategory = Object.prototype.hasOwnProperty.call(categoryConfig, category);
@@ -54,7 +65,9 @@ export default function NewTransactionPage() {
       const customCategoryNote = !isBuiltinCategory
         ? `Categoria personalizada selecionada: ${allCategories[category]?.label ?? category}.`
         : '';
-      const mergedNotes = [customCategoryNote, notes].filter(Boolean).join(' ').trim() || undefined;
+      const selectedCard = creditCards.find((cc) => cc.id === creditCardId);
+      const cardNote = paymentMethod === 'credit_card' && selectedCard ? `Cartao: ${selectedCard.name}.` : '';
+      const mergedNotes = [customCategoryNote, cardNote, notes].filter(Boolean).join(' ').trim() || undefined;
 
       if (isInstallment) {
         const groupId = crypto.randomUUID();
@@ -88,6 +101,20 @@ export default function NewTransactionPage() {
           is_paid: false,
           notes: mergedNotes,
         });
+      }
+
+      if (user?.id && paymentMethod === 'credit_card' && type !== 'income' && creditCardId !== 'none') {
+        const selectedCard = creditCards.find((cc) => cc.id === creditCardId);
+        if (selectedCard) {
+          const nextUsed = Number(selectedCard.used) + amountNum;
+          const { error: cardErr } = await supabase
+            .from('credit_cards')
+            .update({ used: nextUsed })
+            .eq('id', selectedCard.id)
+            .eq('user_id', user.id);
+          if (cardErr) throw cardErr;
+          qc.invalidateQueries({ queryKey: ['credit_cards'] });
+        }
       }
 
       if (!isBuiltinCategory) {
@@ -164,7 +191,16 @@ export default function NewTransactionPage() {
 
             <div>
               <Label>Forma de Pagamento</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <Select
+                value={paymentMethod}
+                onValueChange={(value) => {
+                  setPaymentMethod(value);
+                  if (value !== 'credit_card') {
+                    setCreditCardId('none');
+                    setIsInstallment(false);
+                  }
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -177,6 +213,25 @@ export default function NewTransactionPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {paymentMethod === 'credit_card' && (
+              <div>
+                <Label>Qual cartao foi usado?</Label>
+                <Select value={creditCardId} onValueChange={setCreditCardId}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Selecione um cartao</SelectItem>
+                    {creditCards.map((cc) => (
+                      <SelectItem key={cc.id} value={cc.id}>
+                        {cc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <Button className="w-full" onClick={() => setStep(2)} disabled={!description.trim() || amountNum <= 0}>
               Proximo

@@ -59,11 +59,11 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold">Calendário</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
           <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft size={18} /></Button>
-          <span className="font-medium capitalize min-w-[140px] text-center">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
+          <span className="font-medium capitalize text-center flex-1 sm:flex-none sm:min-w-[140px]">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
           <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight size={18} /></Button>
         </div>
       </div>

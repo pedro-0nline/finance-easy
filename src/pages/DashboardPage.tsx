@@ -110,12 +110,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {coupleGroup && (
-          <div className="flex rounded-lg border border-border p-1">
+          <div className="flex w-full sm:w-auto rounded-lg border border-border p-1">
             <Button
               size="sm"
+              className="flex-1 sm:flex-none"
               variant={viewMode === 'individual' ? 'default' : 'ghost'}
               onClick={() => setViewMode('individual')}
             >
@@ -123,6 +124,7 @@ export default function DashboardPage() {
             </Button>
             <Button
               size="sm"
+              className="flex-1 sm:flex-none"
               variant={viewMode === 'conjunto' ? 'default' : 'ghost'}
               onClick={() => setViewMode('conjunto')}
             >
@@ -185,11 +187,11 @@ export default function DashboardPage() {
           <CardContent className="space-y-3">
             {upcoming.length === 0 && <p className="text-sm text-muted-foreground">Nenhum vencimento próximo</p>}
             {upcoming.map((t) => (
-              <div key={t.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div key={t.id} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
                   <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
-                  <div>
-                    <p className="text-sm font-medium">{t.description}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), "dd 'de' MMM", { locale: ptBR })}</p>
                   </div>
                 </div>
@@ -214,7 +216,7 @@ export default function DashboardPage() {
       </div>
 
       <Card className="animate-fade-in">
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Transações Recentes</CardTitle>
           <Link to="/app/transactions">
             <Button variant="ghost" size="sm" className="gap-1 text-xs">
@@ -225,15 +227,15 @@ export default function DashboardPage() {
         <CardContent>
           <div className="space-y-2">
             {recent.map((t) => (
-              <div key={t.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-3">
+              <div key={t.id} className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <CategoryIconBySlug category={t.category} categories={allCategories} size={14} />
-                  <div>
-                    <p className="text-sm font-medium">{t.description}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{t.description}</p>
                     <p className="text-xs text-muted-foreground">{format(parseISO(t.date), 'dd/MM/yyyy')}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {t.is_installment && <InstallmentBadge current={t.installment_number!} total={t.total_installments!} />}
                   <AmountBadge amount={Number(t.amount)} type={t.type === 'income' ? 'income' : 'expense'} />
                 </div>
