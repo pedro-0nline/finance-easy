@@ -49,7 +49,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
-          <span className="text-xl font-bold text-primary">FinanceNew</span>
+          <span className="text-xl font-bold text-primary">FinanceEasy</span>
           <div className="flex items-center gap-3">
             <Link to="/auth">
               <Button variant="outline" size="sm">
@@ -69,11 +69,12 @@ export default function LandingPage() {
       <section className="py-20 px-4 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <span className="text-primary">FinanceEasy</span> para seu{' '}
             Controle financeiro pessoal e familiar,{' '}
             <span className="text-primary">simples e poderoso</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            O FinanceNew ajuda você a organizar suas finanças, definir metas, acompanhar
+            O FinanceEasy ajuda voce a organizar suas financas, definir metas, acompanhar
             orçamentos e compartilhar despesas com sua família — tudo em um só lugar.
           </p>
           <Link to="/auth">
@@ -123,12 +124,12 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <span>© {new Date().getFullYear()} FinanceNew. Todos os direitos reservados.</span>
+          <span>© {new Date().getFullYear()} FinanceEasy. Todos os direitos reservados.</span>
           <div className="flex gap-4">
-            <Link to="/privacidade" className="hover:text-foreground transition-colors">
-              Política de Privacidade
+            <Link to="/privacy" className="hover:text-foreground transition-colors">
+              Politica de Privacidade
             </Link>
-            <Link to="/termos" className="hover:text-foreground transition-colors">
+            <Link to="/terms" className="hover:text-foreground transition-colors">
               Termos de Uso
             </Link>
           </div>

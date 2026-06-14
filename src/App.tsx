@@ -88,6 +88,8 @@ const App = () => (
               <Route path="/login" element={<AuthRoute />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacidade" element={<PrivacyPage />} />
               <Route path="/termos" element={<TermsPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />

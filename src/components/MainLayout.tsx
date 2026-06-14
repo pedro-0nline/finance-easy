@@ -17,7 +17,7 @@ export function MainLayout() {
           <header className="h-14 flex items-center justify-between border-b border-border px-4 shrink-0">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="hidden md:flex" />
-              <h1 className="font-bold text-lg md:hidden">FinanceNew</h1>
+              <h1 className="font-bold text-lg md:hidden">FinanceEasy</h1>
             </div>
             <Button variant="ghost" size="icon" className="relative">
               <Bell size={18} />

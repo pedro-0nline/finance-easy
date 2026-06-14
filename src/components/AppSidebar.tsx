@@ -41,7 +41,7 @@ export function AppSidebar() {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <Wallet size={18} className="text-primary-foreground" />
           </div>
-          {!collapsed && <span className="font-bold text-lg">FinanceNew</span>}
+          {!collapsed && <span className="font-bold text-lg">FinanceEasy</span>}
         </Link>
       </SidebarHeader>
 

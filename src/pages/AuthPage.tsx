@@ -49,7 +49,7 @@ export default function AuthPage() {
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-3">
             <Wallet size={24} className="text-primary-foreground" />
           </div>
-          <CardTitle className="text-xl">FinControl</CardTitle>
+          <CardTitle className="text-xl">FinanceEasy</CardTitle>
           <p className="text-sm text-muted-foreground">
             {mode === 'login' ? 'Entre na sua conta' : mode === 'register' ? 'Crie sua conta' : 'Recuperar senha'}
           </p>
@@ -107,8 +107,8 @@ export default function AuthPage() {
 
               <p className="text-xs text-muted-foreground text-center mt-4 leading-relaxed">
                 Ao continuar com o Google, você concorda com nossos{' '}
-                <a href="/termos" className="text-primary hover:underline">Termos de Uso</a> e{' '}
-                <a href="/privacidade" className="text-primary hover:underline">Política de Privacidade</a>, e com os{' '}
+                <a href="/terms" className="text-primary hover:underline">Termos de Uso</a> e{' '}
+                <a href="/privacy" className="text-primary hover:underline">Politica de Privacidade</a>, e com os{' '}
                 <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Termos de Serviço</a> e{' '}
                 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Política de Privacidade</a> do Google.
               </p>
