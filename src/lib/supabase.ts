@@ -5,12 +5,17 @@ import { createClient } from '@supabase/supabase-js';
  * - This app runs in the browser and needs Supabase HTTP endpoint + anon key.
  * - If a postgres:// URL is provided (legacy setup), we try to derive the API URL.
  */
-const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawSupabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_DATABASE_URL || '';
+const supabaseKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_DATABASE_ANON_KEY || '';
+const hasSupabaseConfig = Boolean(rawSupabaseUrl && supabaseKey);
+const fallbackSupabaseUrl = 'https://placeholder.supabase.co';
+const fallbackSupabaseKey = 'placeholder-anon-key';
 
-if (!rawSupabaseUrl || !supabaseKey) {
-  throw new Error(
-    'Missing front-end database config. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+if (!hasSupabaseConfig) {
+  console.warn(
+    'Supabase front-end config is missing. Falling back to placeholder values until VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY (or VITE_DATABASE_URL/VITE_DATABASE_ANON_KEY) are provided.'
   );
 }
 
@@ -22,14 +27,14 @@ const resolveSupabaseApiUrl = (urlValue: string): string => {
   const parsedDbUrl = new URL(urlValue);
   let projectRef: string | null = null;
 
-  const dbHostMatch = parsedDbUrl.hostname.match(/^db\.([a-z0-9-]+)\.supabase\.co$/i);
+  const dbHostMatch = /^db\.([a-z0-9-]+)\.supabase\.co$/i.exec(parsedDbUrl.hostname);
   if (dbHostMatch?.[1]) {
     projectRef = dbHostMatch[1];
   }
 
   if (!projectRef && parsedDbUrl.username) {
     const username = decodeURIComponent(parsedDbUrl.username);
-    const usernameMatch = username.match(/^[^.]+\.([a-z0-9-]+)$/i);
+    const usernameMatch = /^[^.]+\.([a-z0-9-]+)$/i.exec(username);
     if (usernameMatch?.[1]) {
       projectRef = usernameMatch[1];
     }
@@ -44,7 +49,8 @@ const resolveSupabaseApiUrl = (urlValue: string): string => {
   return `https://${projectRef}.supabase.co`;
 };
 
-const supabaseUrl = resolveSupabaseApiUrl(rawSupabaseUrl);
+const supabaseUrl = resolveSupabaseApiUrl(hasSupabaseConfig ? rawSupabaseUrl : fallbackSupabaseUrl);
+const supabaseKeyToUse = hasSupabaseConfig ? supabaseKey : fallbackSupabaseKey;
 const parsedSupabaseUrl = new URL(supabaseUrl);
 const supabaseProjectRef = parsedSupabaseUrl.hostname.split('.')[0];
 
@@ -66,7 +72,7 @@ const fetchWithDiagnostics: typeof fetch = async (input, init) => {
   }
 };
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseUrl, supabaseKeyToUse, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
