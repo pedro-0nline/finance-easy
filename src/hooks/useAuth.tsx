@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       provider: 'google',
       options: {
         scopes: 'https://www.googleapis.com/auth/calendar.readonly',
-        redirectTo: window.location.origin,
+        redirectTo: 'https://finance.pedropaulocf.com.br/auth/callback',
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

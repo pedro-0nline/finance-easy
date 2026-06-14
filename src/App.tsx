@@ -20,6 +20,7 @@ import AuthPage from "@/pages/AuthPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import NotFound from "@/pages/NotFound";
 import { useEffect } from "react";
 import { useStore } from "@/store/useStore";
@@ -46,7 +47,7 @@ function ProtectedRoutes() {
     );
   }
 
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <Routes>
@@ -84,7 +85,9 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<AuthRoute />} />
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/privacidade" element={<PrivacyPage />} />
               <Route path="/termos" element={<TermsPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
