@@ -16,6 +16,7 @@ export function useTransactions() {
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
+        .eq('user_id', user!.id)
         .order('date', { ascending: false });
       if (error) throw error;
       return data;
@@ -114,7 +115,7 @@ export function useBankAccounts() {
   return useQuery({
     queryKey: ['bank_accounts', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('bank_accounts').select('*');
+      const { data, error } = await supabase.from('bank_accounts').select('*').eq('user_id', user!.id);
       if (error) throw error;
       return data;
     },
@@ -128,7 +129,7 @@ export function useCreditCards() {
   return useQuery({
     queryKey: ['credit_cards', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('credit_cards').select('*');
+      const { data, error } = await supabase.from('credit_cards').select('*').eq('user_id', user!.id);
       if (error) throw error;
       return data;
     },
@@ -142,7 +143,7 @@ export function useBudgets() {
   return useQuery({
     queryKey: ['budgets', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('budgets').select('*');
+      const { data, error } = await supabase.from('budgets').select('*').eq('user_id', user!.id);
       if (error) throw error;
       return data;
     },
@@ -156,7 +157,7 @@ export function useGoals() {
   return useQuery({
     queryKey: ['goals', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('goals').select('*');
+      const { data, error } = await supabase.from('goals').select('*').eq('user_id', user!.id);
       if (error) throw error;
       return data;
     },
@@ -208,7 +209,11 @@ export function useInsights() {
   return useQuery({
     queryKey: ['insights', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('insights').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('insights')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
