@@ -1,0 +1,111 @@
+{
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "needAccount": "Need an account? Sign Up",
+    "resetPassword": "Reset Password",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "forgotPassword": "Forgot Password?",
+    "resetInstructions": "Enter your email and we'll send you instructions to reset your password.",
+    "checkEmail": "Please check your email for password reset instructions.",
+    "signOut": "Sign Out",
+    "continueWithGoogle": "Continue with Google",
+    "orContinueWithEmail": "or continue with email"
+  },
+  "legal": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "noData": "No data available",
+    "open": "Open",
+    "close": "Close"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "currentMonthIncome": "Current Month Income",
+    "currentMonthExpenses": "Current Month Expenses",
+    "netBalance": "Net Balance",
+    "monthlyTrend": "Monthly Trend",
+    "categoryDistribution": "Category Distribution",
+    "recentLargeExpenses": "Recent Large Expenses",
+    "upcomingBills": "Upcoming Bills",
+    "noDescription": "No description",
+    "monthlyExpensesBreakdown": "Monthly Expenses Breakdown",
+    "regularExpenses": "Regular Expenses",
+    "bills": "Bills",
+    "recurringBills": "Recurring Bills",
+    "total": "Total",
+    "receiptsByCategory": "Receipts by Category",
+    "uncategorized": "Uncategorized",
+    "due": "Due",
+    "installments": "installments of",
+    "paid": "Paid",
+    "pending": "Pending",
+    "income": "Income",
+    "expenses": "Expenses"
+  },
+  "receipts": {
+    "title": "Recibos",
+    "allReceipts": "Todos os Recibos",
+    "addReceipt": "Adicionar Recibo",
+    "viewReceipt": "Ver Recibo",
+    "searchByDescription": "Buscar por descrição",
+    "noReceipts": "Nenhum recibo encontrado",
+    "addedOn": "Adicionado em",
+    "amount": "Valor",
+    "description": "Descrição",
+    "referenceMonth": "Mês de Referência",
+    "category": "Categoria",
+    "noCategory": "Sem Categoria",
+    "uploadReceipt": "Enviar Recibo",
+    "updateReceipt": "Atualizar Recibo",
+    "income": "Receita",
+    "expense": "Despesa"
+  },
+  "bills": {
+    "title": "Bills",
+    "addBill": "Add Bill",
+    "noBills": "No bills found",
+    "pendingBills": "Pending Bills",
+    "paidBills": "Paid Bills",
+    "dueDate": "Due Date",
+    "amount": "Amount",
+    "status": "Status"
+  },
+  "recurring": {
+    "title": "Recurring Bills",
+    "addRecurring": "Add Recurring Bill",
+    "noRecurring": "No recurring bills found",
+    "dueDay": "Due Day",
+    "monthlyAmount": "Monthly Amount"
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "noCategories": "No categories found",
+    "name": "Name",
+    "color": "Color"
+  },
+  "sharing": {
+    "title": "Expense Sharing",
+    "addSharing": "Share Expense",
+    "noSharing": "No shared expenses found",
+    "shareWith": "Share with",
+    "splitPercentage": "Split Percentage",
+    "status": "Status"
+  }
+}

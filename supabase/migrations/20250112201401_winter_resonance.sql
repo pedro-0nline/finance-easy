@@ -1,0 +1,66 @@
+/*
+  # Add Stripe Integration Functions
+
+  1. Changes
+    - Create function to fetch subscription data from Stripe API
+    - Create helper function to parse Stripe timestamps
+    - Add function to get subscription by customer email
+*/
+
+-- Create function to parse Stripe timestamps
+CREATE OR REPLACE FUNCTION parse_stripe_timestamp(ts bigint)
+RETURNS timestamptz
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT to_timestamp(ts)::timestamptz;
+$$;
+
+-- Create function to get subscription by customer email
+CREATE OR REPLACE FUNCTION get_stripe_subscription_by_email(customer_email text)
+RETURNS TABLE (
+  subscription_id text,
+  customer_id text,
+  status text,
+  current_period_end timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  stripe_key text := '__STRIPE_SECRET_KEY__';
+  response jsonb;
+BEGIN
+  -- First get customer ID by email
+  SELECT content::jsonb INTO response
+  FROM http_post(
+    'https://api.stripe.com/v1/customers/search',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || stripe_key,
+      'Content-Type', 'application/x-www-form-urlencoded'
+    ),
+    params := jsonb_build_object(
+      'query', format('email:''%s''', customer_email),
+      'expand[]', 'data.subscriptions'
+    )
+  );
+
+  -- Return subscription data if found
+  RETURN QUERY
+  SELECT 
+    (subscription->>'id')::text,
+    (customer->>'id')::text,
+    (subscription->>'status')::text,
+    parse_stripe_timestamp((subscription->>'current_period_end')::bigint)
+  FROM jsonb_array_elements(response->'data') customer
+  CROSS JOIN jsonb_array_elements(customer->'subscriptions'->'data') subscription
+  WHERE customer->>'email' = customer_email
+  ORDER BY (subscription->>'current_period_end')::bigint DESC
+  LIMIT 1;
+END;
+$$;
+
+-- Grant execute permissions
+GRANT EXECUTE ON FUNCTION parse_stripe_timestamp TO authenticated;
+GRANT EXECUTE ON FUNCTION get_stripe_subscription_by_email TO authenticated;

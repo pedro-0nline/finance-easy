@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(grep -rl \"qidbqjftdikiefsebeqc\" dist)",
+      "Bash(grep -rl \"juxdodymtxyizqvqrhyy\" dist)",
+      "Bash(grep -rl \"auth/callback\" dist)",
+      "Bash(sed 's/\\\\\\(KEY=\\\\\\).*/\\\\1***REDACTED***/')"
+    ]
+  }
+}

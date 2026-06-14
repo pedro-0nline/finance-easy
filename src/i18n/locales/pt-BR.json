@@ -1,0 +1,111 @@
+{
+  "auth": {
+    "login": "Entrar",
+    "signup": "Cadastrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "createAccount": "Criar Conta",
+    "alreadyHaveAccount": "Já tem uma conta? Entre",
+    "needAccount": "Precisa de uma conta? Cadastre-se",
+    "resetPassword": "Redefinir Senha",
+    "sendResetLink": "Enviar Link de Redefinição",
+    "backToLogin": "Voltar ao Login",
+    "forgotPassword": "Esqueceu sua Senha?",
+    "resetInstructions": "Digite seu e-mail e enviaremos instruções para redefinir sua senha.",
+    "checkEmail": "Por favor, verifique seu e-mail para instruções de redefinição de senha.",
+    "signOut": "Sair",
+    "continueWithGoogle": "Continuar com Google",
+    "orContinueWithEmail": "ou continue com e-mail"
+  },
+  "legal": {
+    "privacyPolicy": "Política de Privacidade",
+    "termsOfService": "Termos de Serviço"
+  },
+  "common": {
+    "add": "Adicionar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "noData": "Nenhum dado disponível",
+    "open": "Abrir",
+    "close": "Fechar"
+  },
+  "dashboard": {
+    "title": "Painel",
+    "currentMonthIncome": "Receita do Mês",
+    "currentMonthExpenses": "Despesas do Mês",
+    "netBalance": "Saldo Líquido",
+    "monthlyTrend": "Tendência Mensal",
+    "categoryDistribution": "Distribuição por Categoria",
+    "recentLargeExpenses": "Maiores Despesas Recentes",
+    "upcomingBills": "Próximas Contas",
+    "noDescription": "Sem descrição",
+    "monthlyExpensesBreakdown": "Detalhamento de Despesas Mensais",
+    "regularExpenses": "Despesas Regulares",
+    "bills": "Contas",
+    "recurringBills": "Contas Recorrentes",
+    "total": "Total",
+    "receiptsByCategory": "Recibos por Categoria",
+    "uncategorized": "Sem Categoria",
+    "due": "Vencimento",
+    "installments": "parcelas de",
+    "paid": "Pago",
+    "pending": "Pendente",
+    "income": "Receita",
+    "expenses": "Despesas"
+  },
+  "receipts": {
+    "title": "Recibos",
+    "allReceipts": "Todos os Recibos",
+    "addReceipt": "Adicionar Recibo",
+    "viewReceipt": "Ver Recibo",
+    "searchByDescription": "Buscar por descrição",
+    "noReceipts": "Nenhum recibo encontrado",
+    "addedOn": "Adicionado em",
+    "amount": "Valor",
+    "description": "Descrição",
+    "referenceMonth": "Mês de Referência",
+    "category": "Categoria",
+    "noCategory": "Sem Categoria",
+    "uploadReceipt": "Enviar Recibo",
+    "updateReceipt": "Atualizar Recibo",
+    "income": "Receita",
+    "expense": "Despesa"
+  },
+  "bills": {
+    "title": "Contas",
+    "addBill": "Adicionar Conta",
+    "noBills": "Nenhuma conta encontrada",
+    "pendingBills": "Contas Pendentes",
+    "paidBills": "Contas Pagas",
+    "dueDate": "Data de Vencimento",
+    "amount": "Valor",
+    "status": "Status"
+  },
+  "recurring": {
+    "title": "Contas Recorrentes",
+    "addRecurring": "Adicionar Conta Recorrente",
+    "noRecurring": "Nenhuma conta recorrente encontrada",
+    "dueDay": "Dia de Vencimento",
+    "monthlyAmount": "Valor Mensal"
+  },
+  "categories": {
+    "title": "Categorias",
+    "addCategory": "Adicionar Categoria",
+    "noCategories": "Nenhuma categoria encontrada",
+    "name": "Nome",
+    "color": "Cor"
+  },
+  "sharing": {
+    "title": "Compartilhar",
+    "addSharing": "Compartilhar Despesa",
+    "noSharing": "Nenhuma despesa compartilhada encontrada",
+    "shareWith": "Compartilhar com",
+    "splitPercentage": "Percentual de Divisão",
+    "status": "Status"
+  }
+}

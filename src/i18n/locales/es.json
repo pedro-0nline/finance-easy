@@ -1,0 +1,111 @@
+{
+  "auth": {
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "createAccount": "Crear Cuenta",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta? Inicia Sesión",
+    "needAccount": "¿Necesitas una cuenta? Regístrate",
+    "resetPassword": "Restablecer Contraseña",
+    "sendResetLink": "Enviar Enlace de Restablecimiento",
+    "backToLogin": "Volver al Inicio de Sesión",
+    "forgotPassword": "¿Olvidaste tu Contraseña?",
+    "resetInstructions": "Ingresa tu correo y te enviaremos instrucciones para restablecer tu contraseña.",
+    "checkEmail": "Por favor, revisa tu correo para las instrucciones de restablecimiento de contraseña.",
+    "signOut": "Cerrar Sesión",
+    "continueWithGoogle": "Continuar con Google",
+    "orContinueWithEmail": "o continúa con correo electrónico"
+  },
+  "legal": {
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfService": "Términos de Servicio"
+  },
+  "common": {
+    "add": "Agregar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "noData": "No hay datos disponibles",
+    "open": "Abrir",
+    "close": "Cerrar"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "currentMonthIncome": "Ingresos del Mes",
+    "currentMonthExpenses": "Gastos del Mes",
+    "netBalance": "Balance Neto",
+    "monthlyTrend": "Tendencia Mensual",
+    "categoryDistribution": "Distribución por Categoría",
+    "recentLargeExpenses": "Gastos Grandes Recientes",
+    "upcomingBills": "Próximas Facturas",
+    "noDescription": "Sin descripción",
+    "monthlyExpensesBreakdown": "Desglose de Gastos Mensuales",
+    "regularExpenses": "Gastos Regulares",
+    "bills": "Facturas",
+    "recurringBills": "Facturas Recurrentes",
+    "total": "Total",
+    "receiptsByCategory": "Recibos por Categoría",
+    "uncategorized": "Sin Categoría",
+    "due": "Vencimiento",
+    "installments": "cuotas de",
+    "paid": "Pagado",
+    "pending": "Pendiente",
+    "income": "Ingresos",
+    "expenses": "Gastos"
+  },
+  "receipts": {
+    "title": "Recibos",
+    "allReceipts": "Todos los Recibos",
+    "addReceipt": "Agregar Recibo",
+    "viewReceipt": "Ver Recibo",
+    "searchByDescription": "Buscar por descripción",
+    "noReceipts": "No se encontraron recibos",
+    "addedOn": "Agregado el",
+    "amount": "Monto",
+    "description": "Descripción",
+    "referenceMonth": "Mes de Referencia",
+    "category": "Categoría",
+    "noCategory": "Sin Categoría",
+    "uploadReceipt": "Subir Recibo",
+    "updateReceipt": "Actualizar Recibo",
+    "income": "Ingreso",
+    "expense": "Gasto"
+  },
+  "bills": {
+    "title": "Facturas",
+    "addBill": "Agregar Factura",
+    "noBills": "No se encontraron facturas",
+    "pendingBills": "Facturas Pendientes",
+    "paidBills": "Facturas Pagadas",
+    "dueDate": "Fecha de Vencimiento",
+    "amount": "Monto",
+    "status": "Estado"
+  },
+  "recurring": {
+    "title": "Facturas Recurrentes",
+    "addRecurring": "Agregar Factura Recurrente",
+    "noRecurring": "No se encontraron facturas recurrentes",
+    "dueDay": "Día de Vencimiento",
+    "monthlyAmount": "Monto Mensual"
+  },
+  "categories": {
+    "title": "Categorías",
+    "addCategory": "Agregar Categoría",
+    "noCategories": "No se encontraron categorías",
+    "name": "Nombre",
+    "color": "Color"
+  },
+  "sharing": {
+    "title": "Compartir Gastos",
+    "addSharing": "Compartir Gasto",
+    "noSharing": "No se encontraron gastos compartidos",
+    "shareWith": "Compartir con",
+    "splitPercentage": "Porcentaje de División",
+    "status": "Estado"
+  }
+}
